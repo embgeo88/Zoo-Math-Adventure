@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Puma / Mountain Lion: PLAIN TAWNY coat — NO spots anywhere. Larger than cheetah, leaner than lion -->
+  <!-- Long rope-like tail with dark tip is distinctive -->
+  <!-- Body -->
+  <ellipse cx="56" cy="60" rx="28" ry="15" fill="#C8864A"/>
+  <!-- Head — longer muzzle than leopard -->
+  <ellipse cx="22" cy="54" rx="16" ry="14" fill="#C8864A"/>
+  <!-- Long tail with dark tip -->
+  <path d="M84 62 Q98 58 98 50 Q98 42 90 40" stroke="#C8864A" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <circle cx="89" cy="40" r="5" fill="#4A3020"/>
+  <!-- Legs -->
+  <rect x="32" y="72" width="7" height="17" rx="3.5" fill="#A86A35"/>
+  <rect x="46" y="72" width="7" height="17" rx="3.5" fill="#A86A35"/>
+  <rect x="61" y="72" width="7" height="17" rx="3.5" fill="#A86A35"/>
+  <rect x="74" y="72" width="7" height="17" rx="3.5" fill="#A86A35"/>
+  <!-- Pale cream underside -->
+  <ellipse cx="52" cy="64" rx="22" ry="10" fill="#E8C08A" opacity="0.5"/>
+  <!-- Ears — pointed, dark backs -->
+  <polygon points="26,41 20,29 34,33" fill="#6B3A20"/>
+  <polygon points="26,41 22,31 32,34" fill="#C8864A"/>
+  <!-- Eyes -->
+  <circle cx="16" cy="50" r="4.5" fill="#8B6914"/>
+  <circle cx="15" cy="49" r="1.5" fill="white"/>
+  <!-- White muzzle -->
+  <ellipse cx="12" cy="57" rx="7" ry="6" fill="#F5E6C8"/>
+  <!-- Nose — dark -->
+  <ellipse cx="11" cy="54" rx="3" ry="2.5" fill="#4A3020"/>
+  <!-- NO spots on body at all — completely plain coat is the diagnostic feature -->
+  <!-- Faint darker area on face sides only -->
+  <path d="M14 58 Q18 63 22 62" stroke="#A86A35" stroke-width="1.5" fill="none" opacity="0.6"/>
+</svg>

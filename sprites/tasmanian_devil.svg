@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Tasmanian Devil: stocky, MOSTLY BLACK, WHITE CHEST PATCH, large head with wide RED gape when threatened -->
+  <!-- Body — squat and powerful -->
+  <ellipse cx="52" cy="65" rx="24" ry="18" fill="#1A1A1A"/>
+  <!-- Head — very large, wide, bear-like but smaller body -->
+  <ellipse cx="28" cy="52" rx="22" ry="20" fill="#1A1A1A"/>
+  <!-- WHITE CHEST PATCH — diagnostic mark -->
+  <ellipse cx="50" cy="60" rx="12" ry="9" fill="#FAFAFA"/>
+  <!-- WHITE SHOULDER/RUMP PATCHES (often present) -->
+  <ellipse cx="70" cy="60" rx="7" ry="5" fill="#FAFAFA" opacity="0.7"/>
+  <!-- Ears — small, rounded, reddish-pink inside -->
+  <ellipse cx="16" cy="34" rx="7" ry="8" fill="#1A1A1A"/>
+  <ellipse cx="40" cy="34" rx="7" ry="8" fill="#1A1A1A"/>
+  <ellipse cx="16" cy="35" rx="4.5" ry="5.5" fill="#EF9A9A"/>
+  <ellipse cx="40" cy="35" rx="4.5" ry="5.5" fill="#EF9A9A"/>
+  <!-- Wide RED GAPE MOUTH — what makes them famous -->
+  <path d="M12 60 Q28 74 44 60" fill="#D32F2F"/>
+  <path d="M12 60 Q28 66 44 60" fill="#B71C1C"/>
+  <!-- Teeth -->
+  <rect x="16" y="60" width="4" height="5" rx="1" fill="white"/>
+  <rect x="22" y="61" width="4" height="5" rx="1" fill="white"/>
+  <rect x="28" y="61" width="4" height="5" rx="1" fill="white"/>
+  <rect x="34" y="60" width="4" height="5" rx="1" fill="white"/>
+  <!-- Eyes — beady, black -->
+  <circle cx="16" cy="46" r="4.5" fill="#333"/>
+  <circle cx="15" cy="45" r="1.5" fill="white"/>
+  <circle cx="38" cy="44" r="4.5" fill="#333"/>
+  <circle cx="37" cy="43" r="1.5" fill="white"/>
+  <!-- Nose — wide -->
+  <ellipse cx="12" cy="54" rx="5" ry="4" fill="#424242"/>
+  <!-- Short stout legs -->
+  <rect x="36" y="80" width="8" height="14" rx="4" fill="#1A1A1A"/>
+  <rect x="56" y="80" width="8" height="14" rx="4" fill="#1A1A1A"/>
+  <!-- Short thick tail -->
+  <path d="M66 68 Q80 68 82 58" stroke="#1A1A1A" stroke-width="6" stroke-linecap="round" fill="none"/>
+</svg>

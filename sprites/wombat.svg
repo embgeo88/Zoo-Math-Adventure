@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Wombat: barrel/cube-shaped body, very LOW to ground, FLAT BROAD NOSE, tiny ears, sturdy build -->
+  <!-- The wombat is uniquely boxy — almost rectangular body -->
+  <!-- Body — very wide, rectangular, low-slung -->
+  <rect x="18" y="52" width="64" height="34" rx="16" fill="#8D6E63"/>
+  <!-- Head — broad and flat-faced -->
+  <ellipse cx="22" cy="52" rx="18" ry="15" fill="#8D6E63"/>
+  <!-- Flat broad nose — NOT pointed like most animals -->
+  <rect x="5"  y="50" width="16" height="12" rx="6" fill="#6D4C41"/>
+  <!-- Nostrils -->
+  <ellipse cx="10" cy="55" rx="2.5" ry="2" fill="#4E342E"/>
+  <ellipse cx="17" cy="55" rx="2.5" ry="2" fill="#4E342E"/>
+  <!-- Tiny rounded ears — set wide apart -->
+  <ellipse cx="14" cy="39" rx="6" ry="7" fill="#7B5B4D"/>
+  <ellipse cx="34" cy="36" rx="6" ry="7" fill="#7B5B4D"/>
+  <ellipse cx="14" cy="40" rx="4" ry="5" fill="#A1887F"/>
+  <ellipse cx="34" cy="37" rx="4" ry="5" fill="#A1887F"/>
+  <!-- Eyes — small beady -->
+  <circle cx="16" cy="47" r="3.5" fill="#1A1A1A"/>
+  <circle cx="15.2" cy="46.2" r="1.2" fill="white"/>
+  <!-- Very short stout legs -->
+  <rect x="26" y="82" width="10" height="12" rx="5" fill="#6D4C41"/>
+  <rect x="44" y="82" width="10" height="12" rx="5" fill="#6D4C41"/>
+  <rect x="62" y="82" width="10" height="12" rx="5" fill="#6D4C41"/>
+  <!-- Flat wide feet with claws (diggers!) -->
+  <ellipse cx="31" cy="94" rx="8" ry="4" fill="#5D4037"/>
+  <ellipse cx="49" cy="94" rx="8" ry="4" fill="#5D4037"/>
+  <ellipse cx="67" cy="94" rx="8" ry="4" fill="#5D4037"/>
+  <!-- Tiny stub tail -->
+  <ellipse cx="80" cy="70" rx="7" ry="5" fill="#7B5B4D"/>
+  <!-- Lighter underside -->
+  <ellipse cx="50" cy="70" rx="28" ry="12" fill="#A1887F" opacity="0.35"/>
+</svg>

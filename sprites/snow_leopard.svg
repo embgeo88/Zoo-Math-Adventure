@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Snow Leopard: GREY/SILVER coat, OPEN rosette spots, MASSIVE fluffy tail as long as body -->
+  <!-- The huge banded tail curling up is the unmistakable field mark -->
+  <!-- Body -->
+  <ellipse cx="52" cy="60" rx="28" ry="16" fill="#B0BEC5"/>
+  <!-- Head — broader than cheetah, rounder than lion -->
+  <ellipse cx="22" cy="52" rx="16" ry="15" fill="#B0BEC5"/>
+  <!-- Massive fluffy tail curling up over back — THE key feature -->
+  <path d="M80 60 Q96 52 96 38 Q96 24 82 22 Q74 21 72 28" stroke="#90A4AE" stroke-width="11" stroke-linecap="round" fill="none"/>
+  <!-- Tail tip lighter/white -->
+  <circle cx="74" cy="25" r="7" fill="#ECEFF1"/>
+  <!-- Legs -->
+  <rect x="32" y="73" width="7" height="17" rx="3.5" fill="#90A4AE"/>
+  <rect x="46" y="73" width="7" height="17" rx="3.5" fill="#90A4AE"/>
+  <rect x="60" y="73" width="7" height="17" rx="3.5" fill="#90A4AE"/>
+  <rect x="72" y="73" width="7" height="17" rx="3.5" fill="#90A4AE"/>
+  <!-- Eyes: pale green/grey -->
+  <circle cx="16" cy="48" r="4.5" fill="#80CBC4"/>
+  <circle cx="15" cy="47" r="1.6" fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="11" cy="56" rx="5" ry="4" fill="#CFD8DC"/>
+  <circle cx="11" cy="55" r="2" fill="#546E7A"/>
+  <!-- Ears: rounded with dark back -->
+  <ellipse cx="28" cy="39" rx="7" ry="8" fill="#546E7A"/>
+  <ellipse cx="28" cy="40" rx="4" ry="5" fill="#B0BEC5"/>
+  <!-- Large open rosettes (rings not solid — different from cheetah's solid dots) -->
+  <circle cx="42" cy="54" r="6"   fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <circle cx="55" cy="48" r="5"   fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <circle cx="65" cy="55" r="6"   fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <circle cx="75" cy="50" r="5"   fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <circle cx="48" cy="66" r="5"   fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <circle cx="62" cy="67" r="5.5" fill="none" stroke="#546E7A" stroke-width="2.5"/>
+  <!-- White muzzle area -->
+  <ellipse cx="11" cy="54" rx="7" ry="6" fill="#ECEFF1" opacity="0.6"/>
+</svg>

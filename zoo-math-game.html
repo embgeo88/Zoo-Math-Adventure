@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦁 Zoo Math Adventure!</title>
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json">
+    <!-- iOS / iPadOS home-screen app support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Zoo Math">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <meta name="theme-color" content="#FF9800">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Nunito', 'Comic Sans MS', cursive;
+    background: linear-gradient(160deg, #87CEEB 0%, #b8f0a0 55%, #7ec850 100%);
+    min-height: 100vh; padding: 12px;
+}
+
+/* ── Header ── */
+.header { background: linear-gradient(135deg, #ff7043, #ffa726); border-radius: 22px; padding: 14px 20px; text-align: center; margin-bottom: 12px; box-shadow: 0 5px 18px rgba(0,0,0,.25); border: 3px solid #e64a19; }
+.header h1 { font-size: clamp(1.4em,5vw,2em); font-weight: 900; color: #fff; text-shadow: 2px 2px 6px rgba(0,0,0,.3); }
+.stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.stat-badge { background: #fff; border-radius: 30px; padding: 6px 14px; font-weight: 700; font-size: .95em; box-shadow: 0 2px 6px rgba(0,0,0,.15); border: 2px solid #ffd740; }
+.lvl-badge { background: linear-gradient(135deg, #9c27b0, #7b1fa2); color: #fff; border-color: #6a1b9a; }
+.progress-track { background: rgba(255,255,255,.35); border-radius: 10px; height: 9px; margin-top: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #fff176, #fff); border-radius: 10px; transition: width .5s ease; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 5px; margin-bottom: 12px; background: rgba(255,255,255,.35); border-radius: 18px; padding: 5px; }
+.tab { flex: 1; padding: 9px 3px; border: none; border-radius: 13px; font-size: .78em; font-family: inherit; font-weight: 700; cursor: pointer; background: transparent; color: #444; transition: all .2s; line-height: 1.3; }
+.tab.active { background: #fff; color: #e64a19; box-shadow: 0 3px 10px rgba(0,0,0,.15); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp .3s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Question Card ── */
+.q-card { background: #fff; border-radius: 22px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,.15); border: 3px solid #b3e5fc; transition: border-color .3s; }
+.q-card.emergency { border-color: #ef5350; box-shadow: 0 5px 20px rgba(239,83,80,.25); }
+
+/* Practice notice */
+.practice-bar { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid #66bb6a; border-radius: 12px; padding: 8px 14px; font-size: .85em; font-weight: 700; color: #1b5e20; text-align: center; margin-bottom: 12px; display: none; }
+.practice-bar.show { display: block; animation: fadeUp .3s ease; }
+
+/* Emergency header + stakes */
+.emerg-header { background: linear-gradient(135deg, #c62828, #ef5350); color: #fff; border-radius: 12px; padding: 9px 14px; text-align: center; font-weight: 900; font-size: 1em; margin-bottom: 10px; display: none; }
+.emerg-header.show { display: block; }
+.stakes { display: none; justify-content: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.stakes.show { display: flex; }
+.stake-good { background: #e8f5e9; color: #1b5e20; border: 2px solid #66bb6a; border-radius: 10px; padding: 5px 12px; font-weight: 700; font-size: .88em; }
+.stake-bad  { background: #fce4ec; color: #c62828; border: 2px solid #ef9a9a; border-radius: 10px; padding: 5px 12px; font-weight: 700; font-size: .88em; }
+
+.q-tag { display: inline-block; font-size: .88em; font-weight: 700; color: #0288d1; background: #e1f5fe; border-radius: 20px; padding: 4px 14px; margin-bottom: 12px; }
+.q-tag.hard { color: #6a1b9a; background: #f3e5f5; }
+.q-tag.emergency { color: #b71c1c; background: #ffebee; }
+.q-text { font-size: clamp(1.05em,4vw,1.35em); font-weight: 700; color: #333; text-align: center; line-height: 1.55; margin-bottom: 18px; min-height: 65px; }
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.ans-btn { padding: 16px 10px; border: 3px solid #e0e0e0; border-radius: 16px; font-size: 1.35em; font-family: inherit; font-weight: 900; cursor: pointer; background: linear-gradient(135deg, #f5f5f5, #eee); transition: all .15s; color: #333; }
+.ans-btn:hover { background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-color: #ff7043; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,112,67,.3); }
+.ans-btn.correct { background: linear-gradient(135deg, #c8e6c9, #66bb6a); border-color: #2e7d32; color: #fff; animation: pop .4s ease; }
+.ans-btn.wrong   { background: linear-gradient(135deg, #ffcdd2, #ef9a9a); border-color: #c62828; color: #fff; animation: shake .4s ease; }
+@keyframes pop   { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* Hint box */
+.hint-box { margin-top: 12px; padding: 11px 14px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #42a5f5; border-radius: 13px; font-size: .9em; font-weight: 700; color: #0d47a1; display: none; line-height: 1.5; }
+.hint-box.show { display: block; animation: fadeUp .3s ease; }
+.hint-box.correct-hint { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-color: #66bb6a; color: #1b5e20; }
+.hint-label { font-size: .75em; font-weight: 900; color: #1565c0; letter-spacing: .5px; margin-bottom: 4px; }
+.hint-box.correct-hint .hint-label { color: #2e7d32; }
+
+/* Work-through box (column arithmetic) */
+.workthrough { font-family: 'Courier New', monospace; background: #fff; border: 2px dashed #90caf9; border-radius: 10px; padding: 8px 12px; margin-top: 8px; font-size: .95em; color: #1a237e; line-height: 1.7; white-space: pre; display: inline-block; text-align: right; }
+
+.feedback { margin-top: 12px; padding: 12px 16px; border-radius: 15px; font-size: 1.05em; font-weight: 700; text-align: center; display: none; }
+.feedback.show { display: block; animation: fadeUp .3s ease; }
+.feedback.correct { background: #e8f5e9; color: #1b5e20; border: 2px solid #a5d6a7; }
+.feedback.wrong   { background: #fce4ec; color: #880e4f; border: 2px solid #f48fb1; }
+.feedback.challenge-win  { background: linear-gradient(135deg, #e8f5e9, #dcedc8); color: #1b5e20; border: 2px solid #66bb6a; }
+.feedback.challenge-lose { background: linear-gradient(135deg, #fce4ec, #ffcdd2); color: #880e4f; border: 2px solid #ef9a9a; }
+
+.next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff7043, #ffa726); color: #fff; border: none; border-radius: 16px; font-size: 1.15em; font-family: inherit; font-weight: 900; cursor: pointer; display: none; box-shadow: 0 4px 14px rgba(255,112,67,.4); transition: transform .2s; }
+.next-btn:hover { transform: translateY(-2px); }
+.next-btn.show { display: block; animation: fadeUp .3s ease; }
+
+/* ── Sprites ── */
+.spr { display: block; margin: 0 auto; }
+.spr-fb { display: block; text-align: center; line-height: 1; }
+
+/* ── Zoo Panel ── */
+.zoo-panel { background: #fff; border-radius: 22px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,.15); }
+.zoo-panel h2 { text-align: center; color: #2e7d32; font-size: 1.3em; margin-bottom: 6px; }
+.zoo-stats-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 10px 0 16px; }
+.zoo-stat { background: #f1f8e9; border: 2px solid #a5d6a7; border-radius: 20px; padding: 5px 13px; font-size: .82em; font-weight: 700; color: #33691e; }
+.zoo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.exhibit { background: linear-gradient(135deg, #f1f8e9, #dcedc8); border: 2px solid #aed581; border-radius: 16px; padding: 12px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: transform .2s; }
+.exhibit:hover { transform: translateY(-3px); }
+.exhibit .nm { font-size: .8em; font-weight: 700; color: #444; margin-top: 6px; }
+.exhibit .ct { font-size: .75em; color: #666; }
+.exhibit .net { font-size: .72em; font-weight: 700; margin-top: 3px; }
+.exhibit .net.pos { color: #2e7d32; } .exhibit .net.neg { color: #c62828; }
+.empty-zoo { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #888; }
+
+/* ── Shop Panel ── */
+.shop-panel { background: #fff; border-radius: 22px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,.15); }
+.shop-section { margin-bottom: 22px; }
+.shop-section h3 { color: #e64a19; font-size: 1.15em; margin-bottom: 6px; padding-bottom: 8px; border-bottom: 2px solid #ffe0b2; }
+.shop-hint { font-size: .78em; color: #888; margin-bottom: 12px; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 11px; }
+.shop-card { background: linear-gradient(135deg, #fff8e1, #fff3cd); border: 2.5px solid #ffd740; border-radius: 16px; padding: 12px 10px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.shop-card:not(.cant-afford):hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(255,165,0,.35); border-color: #ff7043; }
+.shop-card.cant-afford { opacity: .52; cursor: not-allowed; filter: grayscale(40%); }
+.shop-card .animal-name { font-weight: 900; font-size: .95em; color: #333; margin: 6px 0 4px; }
+.rarity-pill { font-size: .67em; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 4px; white-space: nowrap; }
+.mass-info { font-size: .72em; color: #777; margin-bottom: 5px; }
+.econ-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; }
+.econ-up { background: #fce4ec; color: #c62828; padding: 2px 6px; border-radius: 8px; font-size: .7em; font-weight: 700; }
+.econ-in { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 8px; font-size: .7em; font-weight: 700; }
+.price-btn { background: #ffd740; border-radius: 20px; padding: 5px 12px; font-weight: 700; font-size: .9em; color: #333; display: inline-block; }
+.owned-badge { position: absolute; top: -8px; right: -8px; background: #4caf50; color: #fff; border-radius: 50%; width: 26px; height: 26px; font-size: .75em; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+
+/* ── Upgrades ── */
+.upg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 11px; }
+.upg-card { background: linear-gradient(135deg, #e8eaf6, #c5cae9); border: 2.5px solid #7986cb; border-radius: 16px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.upg-card:not(.cant-afford):hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(121,134,203,.4); }
+.upg-card.cant-afford { opacity: .52; cursor: not-allowed; filter: grayscale(40%); }
+.upg-card .em-lg { font-size: 2.8em; margin-bottom: 6px; }
+.upg-card .nm { font-weight: 700; font-size: .88em; margin-bottom: 3px; color: #333; }
+.upg-card .ds { font-size: .72em; color: #555; margin-bottom: 8px; }
+.upg-card .price-btn { background: #7986cb; color: #fff; }
+
+/* ── Cycle Report ── */
+.cycle-banner { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0); background: #fff; border: 3px solid #ffd740; border-radius: 22px; padding: 22px 28px; min-width: 270px; max-width: 90vw; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.3); z-index: 9996; transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+.cycle-banner.show { transform: translate(-50%,-50%) scale(1); }
+.cycle-banner h3 { font-size: 1.2em; color: #ff7043; margin-bottom: 12px; }
+.cycle-row { display: flex; justify-content: space-between; align-items: center; margin: 7px 0; font-size: .95em; font-weight: 700; }
+.cy-pos { color: #2e7d32; } .cy-neg { color: #c62828; }
+.cycle-divider { border: none; border-top: 2px dashed #eee; margin: 10px 0; }
+.cycle-net { font-size: 1.15em; font-weight: 900; }
+.cycle-close { margin-top: 14px; padding: 10px 24px; background: linear-gradient(135deg, #ff7043, #ffa726); color: #fff; border: none; border-radius: 12px; font-size: 1em; font-family: inherit; font-weight: 700; cursor: pointer; }
+
+/* ── Level-up Banner ── */
+.lvlup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0); background: linear-gradient(135deg, #ffd740, #ff6d00); color: #fff; padding: 22px 40px; border-radius: 25px; font-size: 1.6em; font-weight: 900; font-family: 'Nunito', cursive; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.35); z-index: 9997; transition: transform .4s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+.lvlup.show { transform: translate(-50%,-50%) scale(1); }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(120px); background: linear-gradient(135deg, #37474f, #546e7a); color: #fff; padding: 12px 26px; border-radius: 30px; font-size: .95em; font-weight: 700; font-family: 'Nunito', cursive; box-shadow: 0 5px 18px rgba(0,0,0,.3); z-index: 9995; transition: transform .35s cubic-bezier(.34,1.56,.64,1); text-align: center; max-width: 90vw; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── Floating money ── */
+.mfloat { position: fixed; font-size: 1.6em; font-weight: 900; font-family: 'Nunito', cursive; pointer-events: none; z-index: 9998; animation: mfl 1.4s ease-out forwards; }
+@keyframes mfl { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-90px) scale(1.4)} }
+
+/* ── Op Picker ── */
+.op-picker { display: flex; gap: 8px; margin-bottom: 12px; }
+.op-btn { flex: 1; padding: 10px 4px; border: 3px solid; border-radius: 16px; font-size: .82em; font-family: inherit; font-weight: 900; cursor: pointer; transition: all .2s; text-align: center; line-height: 1.35; background: transparent; }
+.op-btn[data-op="add"] { border-color: #4caf50; background: #e8f5e9; color: #1b5e20; }
+.op-btn[data-op="sub"] { border-color: #2196f3; background: #e3f2fd; color: #0d47a1; }
+.op-btn[data-op="mul"] { border-color: #ff9800; background: #fff3e0; color: #e65100; }
+.op-btn.op-off { opacity: .35; filter: grayscale(80%); }
+.op-btn:not(.op-off):hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+
+/* ── Rarity legend ── */
+.rarity-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.legend-pill { font-size: .7em; font-weight: 700; padding: 3px 9px; border-radius: 10px; cursor: help; }
+
+/* ── Zoo View (Animated) ── */
+.zoo-view-scroll { overflow-y: auto; max-height: calc(100dvh - 165px); border-radius: 18px; box-shadow: 0 5px 20px rgba(0,0,0,.18); }
+.zoo-view-wrap { border-radius: 0; overflow-x: hidden; }
+/* ── Visit Zone Sections ── */
+.zv-zone { padding: 8px 10px 12px; }
+.zv-zone-label { font-size: .72em; font-weight: 900; letter-spacing: .5px; padding: 3px 12px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+/* ── Animal Food Shop ── */
+.food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+.food-card { background: linear-gradient(135deg,#f1f8e9,#dcedc8); border: 2.5px solid #81c784; border-radius: 16px; padding: 12px 10px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.food-card:not(.cant-afford):hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(100,200,100,.35); border-color: #4caf50; }
+.food-card.cant-afford { opacity: .52; cursor: not-allowed; filter: grayscale(40%); }
+.food-card .f-em { font-size: 2.2em; margin-bottom: 4px; }
+.food-card .f-nm { font-weight: 900; font-size: .88em; color: #333; margin-bottom: 2px; }
+.food-card .f-ds { font-size: .7em; color: #555; margin-bottom: 5px; line-height: 1.3; }
+.food-card .f-boost { font-size: .72em; font-weight: 700; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 2px 7px; margin-bottom: 6px; display: inline-block; }
+.zv-sky { background: linear-gradient(180deg,#42a5f5,#81d4fa); padding: 8px 14px; display: flex; align-items: center; gap: 10px; font-size: 1.15em; min-height: 42px; }
+.zv-mid { background: linear-gradient(180deg,#a5d6a7 0%,#81c784 100%); padding: 10px; }
+.enc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px,1fr)); gap: 10px; }
+.enclosure { border: 4px solid #4e342e; border-radius: 10px; height: 128px; position: relative; overflow: hidden; background: linear-gradient(180deg,#fffde7 0%,#dcedc8 58%,#c5e1a5 100%); }
+.enc-label { position: absolute; top: 0; left: 0; right: 0; background: rgba(62,39,35,.88); color: #fffde7; font-size: .68em; font-weight: 700; text-align: center; padding: 3px 0; z-index: 6; border-radius: 6px 6px 0 0; }
+.enc-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 24px; background: linear-gradient(180deg,#8bc34a,#689f38); border-top: 2px solid #558b2f; }
+.enc-decor { position: absolute; pointer-events: none; user-select: none; font-style: normal; }
+.zoo-animal-walker { position: absolute; bottom: 20px; pointer-events: none; user-select: none; z-index: 4; transform-origin: center bottom; }
+@keyframes zBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+.z-bob { animation: zBob 0.5s ease-in-out infinite; display: inline-block; }
+.zv-path-wrap { background: linear-gradient(180deg,#66bb6a,#43a047); padding: 5px 10px 12px; }
+.zv-path { position: relative; height: 56px; background: linear-gradient(180deg,#d7ccc8,#bcaaa4); border-radius: 8px; border: 2px solid #a1887f; overflow: hidden; }
+.path-lane { position: absolute; top: 50%; left: 0; right: 0; height: 3px; background: repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0,rgba(255,255,255,.55) 18px,transparent 18px,transparent 36px); }
+.zoo-guest { position: absolute; bottom: 3px; font-size: 1.8em; line-height: 1; user-select: none; pointer-events: none; z-index: 4; }
+@keyframes gBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.g-bob { animation: gBob 0.38s ease-in-out infinite; }
+.zv-empty { background: linear-gradient(180deg,#b3e5fc 0%,#a5d6a7 100%); border-radius: 18px; padding: 55px 20px; text-align: center; }
+.zv-empty p { font-size: 1em; font-weight: 700; color: #2e7d32; margin-top: 14px; line-height: 1.7; }
+/* ── Zoo Buildings ── */
+.zv-bldg-wrap { background: linear-gradient(180deg,#4caf50,#388e3c); padding: 8px 10px; }
+.zv-bldg-title { font-size:.72em; font-weight:900; color:#fff; margin-bottom:6px; letter-spacing:.5px; text-shadow:0 1px 3px rgba(0,0,0,.3); }
+.zv-bldg-scroll { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scroll-snap-type:x mandatory; }
+.zv-bldg-scroll::-webkit-scrollbar { height:4px; } .zv-bldg-scroll::-webkit-scrollbar-track { background:rgba(255,255,255,.2); border-radius:4px; } .zv-bldg-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.5); border-radius:4px; }
+.bldg-card { flex:0 0 110px; scroll-snap-align:start; background:rgba(255,255,255,.95); border-radius:12px; padding:8px 6px; text-align:center; cursor:pointer; transition:all .2s; border:3px solid transparent; }
+.bldg-card.owned { border-color:#ffd740; background:linear-gradient(135deg,#fffde7,#fff8e1); }
+.bldg-card.cant-afford { opacity:.5; cursor:not-allowed; filter:grayscale(60%); }
+.bldg-card:not(.cant-afford):not(.owned):hover { transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,.25); border-color:#fff; }
+.bldg-card .b-em { font-size:2em; line-height:1; }
+.bldg-card .b-nm { font-size:.65em; font-weight:900; color:#333; margin:4px 0 2px; line-height:1.2; }
+.bldg-card .b-pr { font-size:.62em; font-weight:700; background:#ffd740; border-radius:8px; padding:2px 5px; color:#333; }
+.bldg-card.owned .b-pr { background:#4caf50; color:#fff; }
+
+/* ── Zone Upgrades ── */
+.zu-zone-block { margin-bottom: 18px; }
+.zu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px,1fr)); gap: 10px; }
+.zu-card { background: linear-gradient(135deg,#f3e5f5,#ede7f6); border: 2.5px solid #ab47bc; border-radius: 16px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.zu-card:not(.cant-afford):not(.zu-owned):not(.zu-locked):hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(171,71,188,.35); }
+.zu-card.zu-owned { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); border-color: #4caf50; cursor: default; }
+.zu-card.zu-locked { opacity: .42; cursor: not-allowed; filter: grayscale(70%); }
+.zu-card.cant-afford { opacity: .52; cursor: not-allowed; }
+.zu-card .zu-em { font-size: 2.2em; margin-bottom: 4px; }
+.zu-card .zu-nm { font-weight: 900; font-size: .84em; color: #333; margin-bottom: 3px; }
+.zu-card .zu-tier { font-size: .63em; font-weight: 900; padding: 2px 8px; border-radius: 8px; margin-bottom: 5px; display: inline-block; }
+.zu-card .zu-ds { font-size: .68em; color: #555; margin-bottom: 6px; line-height: 1.35; }
+
+/* ── Cross-Zone Connections ── */
+.cross-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px,1fr)); gap: 11px; }
+.cross-card { background: linear-gradient(135deg,#fff3e0,#ffe0b2); border: 2.5px solid #ff9800; border-radius: 16px; padding: 12px 10px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.cross-card:not(.cant-afford):not(.cross-owned):hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(255,152,0,.35); border-color: #f57c00; }
+.cross-card.cross-owned { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); border-color: #4caf50; cursor: default; }
+.cross-card.cant-afford { opacity: .52; cursor: not-allowed; }
+.cross-card .cc-em { font-size: 2.4em; margin-bottom: 5px; }
+.cross-card .cc-nm { font-weight: 900; font-size: .85em; color: #333; margin-bottom: 4px; line-height: 1.3; }
+.cross-card .cc-zones { font-size: .64em; font-weight: 700; margin-bottom: 5px; line-height: 1.6; }
+.cross-card .cc-ds { font-size: .7em; color: #555; margin-bottom: 6px; line-height: 1.35; }
+
+/* ── Avatar System ── */
+.av-modal-wrap { position: fixed; inset: 0; z-index: 9999; display: none; }
+.av-modal-wrap.show { display: flex; align-items: center; justify-content: center; }
+.av-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.52); backdrop-filter: blur(3px); }
+.av-modal { position: relative; z-index: 1; background: #fff; border-radius: 24px; padding: 20px; width: min(93vw, 390px); max-height: 88vh; overflow-y: auto; box-shadow: 0 14px 55px rgba(0,0,0,.35); }
+.av-modal::-webkit-scrollbar { width: 4px; } .av-modal::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+.av-modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.av-modal-hdr span { font-weight: 900; font-size: 1em; color: #e64a19; }
+.av-close-btn { background: #fee; border: 2px solid #ef9a9a; color: #c62828; border-radius: 50%; width: 30px; height: 30px; font-size: .88em; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; font-weight: 900; flex-shrink: 0; }
+.av-preview-wrap { background: linear-gradient(135deg,#e3f2fd,#f3e5f5); border-radius: 18px; padding: 16px; text-align: center; margin-bottom: 14px; border: 2px solid #e1bee7; }
+.av-field { margin-bottom: 12px; }
+.av-field-lbl { font-size: .76em; font-weight: 900; color: #555; margin-bottom: 6px; letter-spacing: .3px; }
+.av-name-inp { width: 100%; padding: 9px 13px; border: 2.5px solid #e0e0e0; border-radius: 12px; font-size: .95em; font-family: Nunito, cursive; font-weight: 700; outline: none; box-sizing: border-box; transition: border-color .2s; }
+.av-name-inp:focus { border-color: #ff7043; }
+.av-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.av-swatch { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all .15s; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.av-swatch:hover { transform: scale(1.2); }
+.av-swatch.av-sel { border-color: #ff7043; box-shadow: 0 0 0 3px rgba(255,112,67,.28); transform: scale(1.22); }
+.av-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.av-chip { padding: 5px 11px; border: 2.5px solid #e0e0e0; border-radius: 20px; font-size: .75em; font-family: Nunito, cursive; font-weight: 700; cursor: pointer; background: #f5f5f5; color: #444; transition: all .15s; }
+.av-chip:hover { border-color: #ff7043; color: #e64a19; background: #fff8f6; }
+.av-chip.av-sel { background: linear-gradient(135deg,#ff7043,#ffa726); border-color: transparent; color: #fff; }
+.av-save-btn { width: 100%; padding: 13px; background: linear-gradient(135deg,#ff7043,#ffa726); color: #fff; border: none; border-radius: 16px; font-size: 1em; font-family: Nunito, cursive; font-weight: 900; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 14px rgba(255,112,67,.4); transition: transform .15s; }
+.av-save-btn:hover { transform: translateY(-2px); }
+/* ── Food Match Game ── */
+.match-panel { background:#fff; border-radius:22px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,.15); }
+.match-score-row { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.match-badge { background:#fff3e0; border:2px solid #ffcc80; border-radius:20px; padding:5px 13px; font-size:.78em; font-weight:700; color:#e65100; }
+.match-badge.green { background:#e8f5e9; border-color:#a5d6a7; color:#2e7d32; }
+.match-badge.red   { background:#fce4ec; border-color:#f48fb1; color:#880e4f; }
+.match-food-card { background:linear-gradient(135deg,#fff8e1,#fff3cd); border:3px solid #ffd740; border-radius:18px; padding:18px 14px; text-align:center; margin-bottom:16px; }
+.match-food-em { font-size:3.8em; line-height:1; margin-bottom:6px; }
+.match-food-nm { font-size:1.15em; font-weight:900; color:#333; margin-bottom:4px; }
+.match-food-hint { font-size:.8em; color:#777; font-style:italic; line-height:1.5; }
+.match-q-label { display:inline-block; font-size:.8em; font-weight:900; padding:4px 14px; border-radius:20px; margin-bottom:12px; }
+.match-start-btn { width:100%; padding:16px; background:linear-gradient(135deg,#ff7043,#ffa726); color:#fff; border:none; border-radius:16px; font-size:1.1em; font-family:inherit; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(255,112,67,.4); transition:transform .2s; margin-top:4px; }
+.match-start-btn:hover { transform:translateY(-2px); }
+.match-bonus-pill { display:inline-block; border-radius:20px; padding:7px 18px; font-size:.95em; font-weight:900; margin:4px 3px; }
+.match-result-score { font-size:1.35em; font-weight:900; margin:10px 0; }
+/* ── Pairs Match (Drag) Game ── */
+.dm-panel { background:#fff; border-radius:22px; padding:14px; box-shadow:0 5px 20px rgba(0,0,0,.15); }
+.dm-cols { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:10px 0; }
+.dm-col-hd { text-align:center; font-size:.72em; font-weight:900; color:#888; padding:4px 0 3px; }
+.dm-item { border:2px solid #e0e0e0; border-radius:11px; padding:6px 4px; cursor:pointer; text-align:center; background:#fafafa; transition:border-color .15s,background .15s,box-shadow .15s; font-weight:700; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; user-select:none; position:relative; }
+.dm-item:active { transform:scale(.97); }
+.dm-item .dm-em  { font-size:1.55em; line-height:1; }
+.dm-item .dm-lbl { font-size:.68em; color:#555; line-height:1.2; }
+.dm-item.dm-sel  { border-color:#ff7043!important; background:#fff3e0!important; box-shadow:0 0 0 3px rgba(255,112,67,.3)!important; }
+.dm-item.dm-ok   { background:#e8f5e9!important; border-color:#4caf50!important; }
+.dm-item.dm-err  { background:#fce4ec!important; border-color:#f44336!important; }
+.dm-dot { position:absolute; top:2px; right:5px; font-size:.6em; font-weight:900; color:#555; }
+.dm-submit-btn { width:100%; padding:14px; background:linear-gradient(135deg,#7b1fa2,#9c27b0); color:#fff; border:none; border-radius:14px; font-size:1em; font-family:inherit; font-weight:900; cursor:pointer; margin-top:6px; transition:opacity .2s; }
+.dm-submit-btn:disabled { opacity:.45; cursor:not-allowed; }
+/* Header avatar pill */
+.hdr-av-pill { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.35); border-radius: 30px; padding: 3px 10px 3px 3px; cursor: pointer; transition: all .2s; margin-top: 8px; }
+.hdr-av-pill:hover { background: rgba(255,255,255,.32); transform: translateY(-1px); }
+.hdr-av-nm { font-size: .74em; font-weight: 900; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.25); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h1>🦁 Zoo Math Adventure! 🌟</h1>
+    <div class="hdr-av-pill" onclick="openAvatarEditor()" id="hdrAvPill" title="Customize your zookeeper!">
+        <div id="hdrAvIcon" style="line-height:0"></div>
+        <span class="hdr-av-nm" id="hdrAvNm">Zookeeper</span>
+    </div>
+    <div class="stats">
+        <div class="stat-badge" id="moneyBadge">💰 $75</div>
+        <div class="stat-badge" id="scoreBadge">⭐ Score: 0</div>
+        <div class="stat-badge" id="streakBadge">🔥 Streak: 0</div>
+        <div class="stat-badge lvl-badge" id="levelBadge">Zookeeper Trainee</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+    <button class="tab active" data-tab="questions" onclick="switchTab(this)">❓ Questions</button>
+    <button class="tab" data-tab="zoo" onclick="switchTab(this)">🏞️ My Zoo</button>
+    <button class="tab" data-tab="shop" onclick="switchTab(this)">🛒 Shop</button>
+    <button class="tab" data-tab="zooview" onclick="switchTab(this)">🦁 Visit</button>
+    <button class="tab" data-tab="progress" onclick="switchTab(this)">📊 Progress</button>
+    <button class="tab" data-tab="match"    onclick="switchTab(this)">🍽️ Match</button>
+</div>
+
+<!-- QUESTIONS TAB -->
+<div class="tab-content active" id="tab-questions">
+    <div class="op-picker" id="opPicker">
+        <button class="op-btn" data-op="add" onclick="toggleOp('add')">➕<br>Addition</button>
+        <button class="op-btn" data-op="sub" onclick="toggleOp('sub')">➖<br>Subtraction</button>
+        <button class="op-btn" data-op="mul" onclick="toggleOp('mul')">✖️<br>Times Tables</button>
+    </div>
+    <div class="q-card" id="qCard">
+        <div class="practice-bar" id="practiceBar"></div>
+        <div class="emerg-header" id="emergHeader">🚨 ZOO EMERGENCY!</div>
+        <div class="stakes" id="stakes"></div>
+        <div style="text-align:center"><span class="q-tag" id="qTag">🔢 Loading...</span></div>
+        <div class="q-text" id="qText">Loading your first question...</div>
+        <div class="answers" id="answers"></div>
+        <div class="hint-box" id="hintBox"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question ➡️</button>
+    </div>
+</div>
+
+<!-- ZOO TAB -->
+<div class="tab-content" id="tab-zoo">
+    <div class="zoo-panel">
+        <h2>🏞️ My Amazing Zoo!</h2>
+        <div class="zoo-stats-row" id="zooStatsRow"></div>
+        <div class="zoo-grid" id="zooGrid"></div>
+        <div id="trophyCase" style="margin-top:16px;padding-top:14px;border-top:2px dashed #e0e0e0"></div>
+        <div style="text-align:center;margin-top:12px">
+            <button onclick="resetGame()" style="background:#ffebee;border:2px solid #ef9a9a;color:#b71c1c;padding:7px 18px;border-radius:12px;font-family:inherit;font-size:.82em;font-weight:700;cursor:pointer">🗑️ Start Over</button>
+        </div>
+    </div>
+</div>
+
+<!-- PROGRESS TAB -->
+<div class="tab-content" id="tab-progress"></div>
+
+<!-- SHOP TAB -->
+<div class="tab-content" id="tab-shop">
+    <div class="shop-panel">
+        <div class="shop-section">
+            <h3>🐾 Buy Animals</h3>
+            <p class="shop-hint">Rarity drives purchase price. Mass drives upkeep cost. Bigger & rarer = more expensive to run!</p>
+            <div class="rarity-legend" id="rarityLegend"></div>
+            <div class="shop-grid" id="animalShop"></div>
+        </div>
+        <div class="shop-section">
+            <h3>🏗️ Zoo Upgrades</h3>
+            <div class="upg-grid" id="upgradeShop"></div>
+        </div>
+        <div class="shop-section">
+            <h3>🥩 Animal Food</h3>
+            <p class="shop-hint">Buy zone-specific food to boost ticket income for those animals. Each purchase stacks permanently!</p>
+            <div class="food-grid" id="foodShop"></div>
+        </div>
+        <div class="shop-section">
+            <h3>🌍 Zone Upgrades</h3>
+            <p class="shop-hint">Each zone has 3 tiers of upgrades — unlock in order. Upgrades boost income for every animal in that zone!</p>
+            <div id="zoneUpgShop"></div>
+        </div>
+        <div class="shop-section">
+            <h3>🌉 Cross-Zone Connections</h3>
+            <p class="shop-hint">Build connections between zones to boost income for animals in both connected zones!</p>
+            <div class="cross-grid" id="crossUpgShop"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ZOO VIEW TAB -->
+<div class="tab-content" id="tab-zooview"></div>
+<div class="tab-content" id="tab-match"></div>
+
+<!-- AVATAR EDITOR MODAL -->
+<div class="av-modal-wrap" id="avModal">
+    <div class="av-backdrop" onclick="closeAvatarEditor()"></div>
+    <div class="av-modal" id="avModalInner"></div>
+</div>
+
+<!-- OVERLAYS -->
+<div class="cycle-banner" id="cycleBanner">
+    <h3>🗓️ Zoo Report!</h3>
+    <div id="cycleRows"></div>
+    <hr class="cycle-divider">
+    <div class="cycle-net" id="cycleNet"></div>
+    <button class="cycle-close" onclick="closeCycle()">Keep Going! ➡️</button>
+</div>
+<div class="lvlup" id="lvlup"></div>
+<div class="toast" id="toast"></div>
+
+<script src="questions.js"></script>
+<script>
+// ─────────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────────
+const TW = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/';
+
+const RARITY = {
+    LC: { label:'Least Concern',        color:'#43a047', text:'#fff', tip:'Widespread & abundant in the wild' },
+    NT: { label:'Near Threatened',      color:'#8bc34a', text:'#fff', tip:'Could become threatened without conservation' },
+    VU: { label:'Vulnerable',           color:'#fbc02d', text:'#333', tip:'High risk of extinction in the wild' },
+    EN: { label:'Endangered',           color:'#fb8c00', text:'#fff', tip:'Very high risk of extinction' },
+    CR: { label:'Critically Endangered',color:'#e53935', text:'#fff', tip:'Extremely high risk — needs urgent protection!' },
+};
+const MASS = {
+    tiny:   { label:'Tiny',   range:'< 10 kg' },
+    small:  { label:'Small',  range:'10–100 kg' },
+    medium: { label:'Medium', range:'100–500 kg' },
+    large:  { label:'Large',  range:'500–2,000 kg' },
+    giant:  { label:'Giant',  range:'> 2,000 kg' },
+};
+
+const ZONES = {
+    tropical:   { label:'🌴 Tropical',    bg:'#e8f5e9', border:'#66bb6a', color:'#1b5e20' },
+    savanna:    { label:'🌾 Savanna',     bg:'#fff8e1', border:'#ffca28', color:'#e65100' },
+    arctic:     { label:'🧊 Arctic',      bg:'#e3f2fd', border:'#42a5f5', color:'#0d47a1' },
+    rainforest: { label:'🌧️ Rainforest',  bg:'#f3e5f5', border:'#ab47bc', color:'#4a148c' },
+    river:      { label:'💧 River',       bg:'#e0f7fa', border:'#26c6da', color:'#006064' },
+    mountain:   { label:'⛰️ Mountain',    bg:'#eceff1', border:'#90a4ae', color:'#263238' },
+    aquarium:   { label:'🐠 Aquarium',    bg:'#e0f2f1', border:'#26a69a', color:'#004d40' },
+    oceania:    { label:'🦘 Oceania',     bg:'#fbe9e7', border:'#e64a19', color:'#b71c1c' },
+};
+
+const ANIMALS = [
+    // ── TROPICAL ──
+    { id:'flamingo',         name:'Flamingo',             emoji:'🦩', u:'1f9a9', cost:35,  upkeep:3,  income:7,  rarity:'LC', mass:'tiny',   kg:'3 kg',       zone:'tropical',   desc:'Elegant pink wading bird' },
+    { id:'monkey',           name:'Capuchin Monkey',      emoji:'🐒', u:'1f412', cost:40,  upkeep:4,  income:8,  rarity:'LC', mass:'small',  kg:'4 kg',       zone:'tropical',   desc:'Tool-using primate of the tropics' },
+    { id:'macaw',            name:'Scarlet Macaw',        emoji:'🦜', u:'1f99c', cost:45,  upkeep:4,  income:9,  rarity:'LC', mass:'tiny',   kg:'1 kg',       zone:'tropical',   desc:'Brilliant red parrot of the Americas' },
+    { id:'peacock',          name:'Indian Peacock',       emoji:'🦚', u:'1f99a', cost:58,  upkeep:5,  income:10, rarity:'LC', mass:'small',  kg:'5 kg',       zone:'tropical',   desc:'Dazzling fan-tailed display bird' },
+    { id:'iguana',           name:'Green Iguana',         emoji:'🦎', u:'1f98e', cost:52,  upkeep:4,  income:9,  rarity:'LC', mass:'small',  kg:'4 kg',       zone:'tropical',   desc:'Sun-loving lizard of the treetops' },
+    { id:'dart_frog',        name:'Poison Dart Frog',     emoji:'🐸', u:'1f438', cost:32,  upkeep:2,  income:6,  rarity:'LC', mass:'tiny',   kg:'0.003 kg',   zone:'tropical',   desc:'Jewel-bright and famously toxic!' },
+    { id:'bearded_dragon',   name:'Bearded Dragon',       emoji:'🦎', u:'1f98e', cost:62,  upkeep:5,  income:11, rarity:'LC', mass:'small',  kg:'0.5 kg',     zone:'tropical',   desc:'Friendly desert lizard from Australia' },
+    { id:'king_cobra',       name:'King Cobra',           emoji:'🐍', u:'1f40d', cost:88,  upkeep:8,  income:14, rarity:'VU', mass:'small',  kg:'6 kg',       zone:'tropical',   desc:"World's longest venomous snake!" },
+    { id:'saltwater_croc',   name:'Saltwater Crocodile',  emoji:'🐊', u:'1f40a', cost:165, upkeep:18, income:22, rarity:'LC', mass:'large',  kg:'1,000 kg',   zone:'tropical',   desc:"Earth's largest living reptile" },
+    { id:'koala',            name:'Koala',                emoji:'🐨', u:'1f428', cost:168, upkeep:14, income:20, rarity:'VU', mass:'small',  kg:'10 kg',      zone:'tropical',   desc:'Eucalyptus-loving Australian marsupial' },
+    // ── SAVANNA ──
+    { id:'zebra',            name:'Plains Zebra',         emoji:'🦓', u:'1f993', cost:110, upkeep:18, income:20, rarity:'NT', mass:'large',  kg:'350 kg',     zone:'savanna',    desc:'Striped plains grazer of Africa' },
+    { id:'lion',             name:'African Lion',         emoji:'🦁', u:'1f981', cost:180, upkeep:20, income:22, rarity:'VU', mass:'medium', kg:'190 kg',     zone:'savanna',    desc:'King of the savanna' },
+    { id:'giraffe',          name:'Giraffe',              emoji:'🦒', u:'1f992', cost:220, upkeep:28, income:24, rarity:'VU', mass:'large',  kg:'900 kg',     zone:'savanna',    desc:"World's tallest animal" },
+    { id:'rhino',            name:'White Rhinoceros',     emoji:'🦏', u:'1f98f', cost:200, upkeep:30, income:28, rarity:'NT', mass:'large',  kg:'1,800 kg',   zone:'savanna',    desc:'Armoured grassland giant' },
+    { id:'elephant',         name:'African Elephant',     emoji:'🐘', u:'1f418', cost:300, upkeep:55, income:50, rarity:'VU', mass:'giant',  kg:'5,000 kg',   zone:'savanna',    desc:"Earth's largest land animal" },
+    { id:'cheetah',          name:'Cheetah',              emoji:'🐆', u:'custom:sprites/cheetah.svg', cost:215, upkeep:18, income:24, rarity:'VU', mass:'medium', kg:'55 kg',      zone:'savanna',    desc:'Fastest land animal at 120 km/h' },
+    { id:'buffalo',          name:'African Buffalo',      emoji:'🦬', u:'1f9ac', cost:145, upkeep:20, income:22, rarity:'NT', mass:'large',  kg:'750 kg',     zone:'savanna',    desc:'Massive herd animal of the plains' },
+    { id:'warthog',          name:'Warthog',              emoji:'🐗', u:'1f417', cost:55,  upkeep:6,  income:10, rarity:'LC', mass:'small',  kg:'75 kg',      zone:'savanna',    desc:'Tusked wild pig of the African plains' },
+    { id:'meerkat',          name:'Meerkat',              emoji:'🐾', u:'custom:sprites/meerkat.svg', cost:42,  upkeep:3,  income:8,  rarity:'LC', mass:'tiny',   kg:'0.9 kg',     zone:'savanna',    desc:'Sociable sentinels of the Kalahari' },
+    { id:'bald_eagle',       name:'Bald Eagle',           emoji:'🦅', u:'1f985', cost:175, upkeep:14, income:20, rarity:'LC', mass:'medium', kg:'5 kg',       zone:'savanna',    desc:'Majestic national bird of the USA' },
+    { id:'condor',           name:'Andean Condor',        emoji:'🦅', u:'1f985', cost:245, upkeep:22, income:26, rarity:'VU', mass:'large',  kg:'15 kg',      zone:'savanna',    desc:'Largest flying bird by wingspan in the Americas' },
+    { id:'red_hawk',         name:'Red-tailed Hawk',      emoji:'🐦', u:'1f426', cost:90,  upkeep:8,  income:14, rarity:'LC', mass:'small',  kg:'1 kg',       zone:'savanna',    desc:'Powerful raptor of the open skies' },
+    { id:'wild_dog',         name:'African Wild Dog',     emoji:'🐕', u:'1f415', cost:205, upkeep:16, income:23, rarity:'EN', mass:'medium', kg:'30 kg',      zone:'savanna',    desc:'Highly social painted hunting dog' },
+    { id:'camel',            name:'Dromedary Camel',      emoji:'🐪', u:'1f42a', cost:132, upkeep:16, income:19, rarity:'LC', mass:'large',  kg:'500 kg',     zone:'savanna',    desc:'Desert survivor with one great hump' },
+    { id:'kangaroo',         name:'Red Kangaroo',         emoji:'🦘', u:'1f998', cost:142, upkeep:14, income:19, rarity:'LC', mass:'medium', kg:'90 kg',      zone:'savanna',    desc:"Australia's largest marsupial" },
+    { id:'llama',            name:'Llama',                emoji:'🦙', u:'1f999', cost:98,  upkeep:10, income:16, rarity:'LC', mass:'medium', kg:'130 kg',     zone:'savanna',    desc:'Fluffy Andean pack animal that loves to spit!' },
+    // ── ARCTIC ──
+    { id:'penguin',          name:'Rockhopper Penguin',   emoji:'🐧', u:'1f427', cost:65,  upkeep:6,  income:11, rarity:'EN', mass:'small',  kg:'3 kg',       zone:'arctic',     desc:'Spiky-crested penguin of rocky shores' },
+    { id:'emperor_penguin',  name:'Emperor Penguin',      emoji:'🐧', u:'1f427', cost:82,  upkeep:8,  income:13, rarity:'NT', mass:'medium', kg:'45 kg',      zone:'arctic',     desc:"World's largest penguin" },
+    { id:'polar_bear',       name:'Polar Bear',           emoji:'🐻‍❄️', u:'1f43b-200d-2744-fe0f', cost:235, upkeep:28, income:27, rarity:'VU', mass:'large',  kg:'500 kg',     zone:'arctic',     desc:'King of the Arctic ice' },
+    { id:'arctic_fox',       name:'Arctic Fox',           emoji:'🦊', u:'1f98a', cost:72,  upkeep:6,  income:12, rarity:'LC', mass:'small',  kg:'3.5 kg',     zone:'arctic',     desc:'Snow-white hunter of the frozen north' },
+    { id:'snowy_owl',        name:'Snowy Owl',            emoji:'🦉', u:'1f989', cost:87,  upkeep:7,  income:13, rarity:'LC', mass:'small',  kg:'2 kg',       zone:'arctic',     desc:'Silent ghost of the tundra' },
+    { id:'walrus',           name:'Walrus',               emoji:'🦭', u:'1f9ad', cost:195, upkeep:24, income:25, rarity:'VU', mass:'large',  kg:'1,200 kg',   zone:'arctic',     desc:'Tusked giant of the Arctic seas' },
+    { id:'arctic_hare',      name:'Arctic Hare',          emoji:'🐇', u:'1f407', cost:36,  upkeep:3,  income:7,  rarity:'LC', mass:'tiny',   kg:'4 kg',       zone:'arctic',     desc:'Speedy snowball of the frozen tundra' },
+    { id:'reindeer',         name:'Reindeer',             emoji:'🦌', u:'1f98c', cost:122, upkeep:16, income:19, rarity:'LC', mass:'large',  kg:'180 kg',     zone:'arctic',     desc:'Famous festive deer of the far north' },
+    { id:'snow_leopard',     name:'Snow Leopard',         emoji:'🐆', u:'custom:sprites/snow_leopard.svg', cost:275, upkeep:25, income:28, rarity:'VU', mass:'large',  kg:'55 kg',      zone:'arctic',     desc:'Ghost cat of the Himalayas' },
+    // ── RAINFOREST ──
+    { id:'panda',            name:'Giant Panda',          emoji:'🐼', u:'1f43c', cost:200, upkeep:15, income:22, rarity:'VU', mass:'medium', kg:'110 kg',     zone:'rainforest', desc:'Bamboo-loving bear of China' },
+    { id:'tiger',            name:'Bengal Tiger',         emoji:'🐯', u:'1f42f', cost:280, upkeep:22, income:30, rarity:'EN', mass:'medium', kg:'220 kg',     zone:'rainforest', desc:'Mighty striped cat of South Asia' },
+    { id:'orangutan',        name:'Bornean Orangutan',    emoji:'🦧', u:'1f9a7', cost:350, upkeep:12, income:42, rarity:'CR', mass:'medium', kg:'75 kg',      zone:'rainforest', desc:'Clever great ape of Borneo' },
+    { id:'gorilla',          name:'Mountain Gorilla',     emoji:'🦍', u:'1f98d', cost:285, upkeep:30, income:32, rarity:'EN', mass:'large',  kg:'180 kg',     zone:'rainforest', desc:'Gentle giant of the jungle mountains' },
+    { id:'sumatran_tiger',   name:'Sumatran Tiger',       emoji:'🐅', u:'1f405', cost:325, upkeep:24, income:34, rarity:'CR', mass:'medium', kg:'140 kg',     zone:'rainforest', desc:'Rarest tiger — critically endangered!' },
+    { id:'white_tiger',      name:'White Tiger',          emoji:'🐅', u:'1f405', cost:295, upkeep:22, income:32, rarity:'EN', mass:'medium', kg:'220 kg',     zone:'rainforest', desc:'Rare colour variant of the Bengal Tiger' },
+    { id:'sloth',            name:'Three-toed Sloth',     emoji:'🦥', u:'1f9a5', cost:78,  upkeep:6,  income:12, rarity:'LC', mass:'small',  kg:'4 kg',       zone:'rainforest', desc:'Slowest mammal on Earth — loves to hang!' },
+    { id:'jaguar',           name:'Jaguar',               emoji:'🐆', u:'1f406', cost:192, upkeep:18, income:23, rarity:'NT', mass:'medium', kg:'100 kg',     zone:'rainforest', desc:'Powerful spotted cat of the Americas' },
+    { id:'harpy_eagle',      name:'Harpy Eagle',          emoji:'🦅', u:'1f985', cost:262, upkeep:22, income:29, rarity:'VU', mass:'large',  kg:'9 kg',       zone:'rainforest', desc:"One of the world's largest & most powerful eagles" },
+    { id:'mandrill',         name:'Mandrill',             emoji:'🐵', u:'1f435', cost:155, upkeep:14, income:20, rarity:'VU', mass:'medium', kg:'40 kg',      zone:'rainforest', desc:"World's largest monkey, with vivid face colours!" },
+    { id:'tree_frog',        name:'Red-Eyed Tree Frog',   emoji:'🐸', u:'1f438', cost:46,  upkeep:3,  income:9,  rarity:'LC', mass:'tiny',   kg:'0.006 kg',   zone:'rainforest', desc:'Iconic neon frog of Central America' },
+    { id:'philippine_eagle', name:'Philippine Eagle',     emoji:'🦅', u:'1f985', cost:315, upkeep:24, income:35, rarity:'CR', mass:'large',  kg:'8 kg',       zone:'rainforest', desc:"Philippines' national bird & apex raptor" },
+    { id:'water_dragon',     name:'Chinese Water Dragon', emoji:'🦎', u:'1f98e', cost:57,  upkeep:5,  income:10, rarity:'LC', mass:'small',  kg:'0.3 kg',     zone:'rainforest', desc:'Brilliant green lizard that loves to swim' },
+    { id:'anaconda',         name:'Green Anaconda',       emoji:'🐍', u:'1f40d', cost:135, upkeep:16, income:21, rarity:'LC', mass:'large',  kg:'100 kg',     zone:'rainforest', desc:"World's heaviest snake — up to 9 metres long!" },
+    { id:'komodo',           name:'Komodo Dragon',        emoji:'🦎', u:'1f98e', cost:195, upkeep:20, income:25, rarity:'VU', mass:'large',  kg:'90 kg',      zone:'rainforest', desc:"World's largest living lizard" },
+    // ── RIVER ──
+    { id:'hippo',            name:'Common Hippo',         emoji:'🦛', u:'1f99b', cost:260, upkeep:35, income:28, rarity:'VU', mass:'large',  kg:'2,000 kg',   zone:'river',      desc:'Semi-aquatic giant of African rivers' },
+    { id:'nile_croc',        name:'Nile Crocodile',       emoji:'🐊', u:'1f40a', cost:152, upkeep:17, income:21, rarity:'LC', mass:'large',  kg:'750 kg',     zone:'river',      desc:'Apex predator lurking in African rivers' },
+    { id:'river_otter',      name:'Giant River Otter',    emoji:'🦦', u:'1f9a6', cost:182, upkeep:16, income:22, rarity:'EN', mass:'medium', kg:'30 kg',      zone:'river',      desc:'Playful fish-hunting otter of the Amazon' },
+    { id:'capybara',         name:'Capybara',             emoji:'🦫', u:'1f9ab', cost:112, upkeep:13, income:17, rarity:'LC', mass:'medium', kg:'65 kg',      zone:'river',      desc:"World's largest rodent — surprisingly chill!" },
+    { id:'manatee',          name:'West Indian Manatee',  emoji:'🐟', u:'custom:sprites/manatee.svg', cost:202, upkeep:20, income:25, rarity:'VU', mass:'large',  kg:'500 kg',     zone:'river',      desc:'Gentle sea cow of warm river mouths' },
+    { id:'nile_monitor',     name:'Nile Monitor',         emoji:'🦎', u:'1f98e', cost:118, upkeep:14, income:18, rarity:'LC', mass:'medium', kg:'20 kg',      zone:'river',      desc:'Large, intelligent lizard of African rivers' },
+    { id:'river_dolphin',    name:'Amazon River Dolphin', emoji:'🐬', u:'1f42c', cost:225, upkeep:18, income:26, rarity:'EN', mass:'medium', kg:'185 kg',     zone:'river',      desc:'Pink freshwater dolphin of the Amazon' },
+    { id:'axolotl',          name:'Axolotl',              emoji:'🦎', u:'custom:sprites/axolotl.svg', cost:98,  upkeep:8,  income:15, rarity:'CR', mass:'tiny',   kg:'0.3 kg',     zone:'river',      desc:'Extraordinary salamander that never grows up!' },
+    { id:'gharial',          name:'Gharial',              emoji:'🐊', u:'1f40a', cost:185, upkeep:18, income:23, rarity:'CR', mass:'large',  kg:'160 kg',     zone:'river',      desc:'Critically endangered fish-eating crocodilian' },
+    { id:'swan',             name:'Mute Swan',            emoji:'🦢', u:'1f9a2', cost:65,  upkeep:6,  income:11, rarity:'LC', mass:'small',  kg:'12 kg',      zone:'river',      desc:'Elegant and surprisingly fierce water bird' },
+    // ── MOUNTAIN / ALPINE ──
+    { id:'mountain_goat',    name:'Mountain Goat',         emoji:'🐐', u:'1f410', cost:78,  upkeep:7,  income:12, rarity:'LC', mass:'small',  kg:'90 kg',      zone:'mountain',   desc:'Sure-footed climber of alpine ridges' },
+    { id:'grizzly',          name:'Grizzly Bear',          emoji:'🐻', u:'1f43b', cost:242, upkeep:30, income:28, rarity:'LC', mass:'large',  kg:'250 kg',     zone:'mountain',   desc:'Powerful brown bear of mountain forests' },
+    { id:'gray_wolf',        name:'Gray Wolf',             emoji:'🐺', u:'1f43a', cost:178, upkeep:16, income:22, rarity:'LC', mass:'medium', kg:'40 kg',      zone:'mountain',   desc:'Apex predator of mountain wilderness' },
+    { id:'puma',             name:'Puma',                  emoji:'🦁', u:'custom:sprites/puma.svg', cost:172, upkeep:15, income:21, rarity:'NT', mass:'medium', kg:'68 kg',      zone:'mountain',   desc:'Stealthy mountain lion of the Americas' },
+    { id:'bighorn',          name:'Bighorn Sheep',         emoji:'🐏', u:'1f40f', cost:108, upkeep:12, income:16, rarity:'LC', mass:'medium', kg:'90 kg',      zone:'mountain',   desc:'Iconic curly-horned sheep of the Rockies' },
+    { id:'marmot',           name:'Alpine Marmot',         emoji:'🐿️', u:'1f43f', cost:42,  upkeep:3,  income:8,  rarity:'LC', mass:'tiny',   kg:'4 kg',       zone:'mountain',   desc:'Chubby whistle-pig of high meadows' },
+    { id:'yak',              name:'Wild Yak',              emoji:'🐃', u:'1f403', cost:148, upkeep:18, income:20, rarity:'VU', mass:'large',  kg:'900 kg',     zone:'mountain',   desc:'Shaggy highland bovid of the Himalayas' },
+    { id:'red_panda',        name:'Red Panda',             emoji:'🦊', u:'custom:sprites/red_panda.svg', cost:188, upkeep:15, income:22, rarity:'EN', mass:'small',  kg:'5 kg',       zone:'mountain',   desc:'Rust-furred bamboo-lover of misty forests' },
+    { id:'golden_eagle_m',   name:'Golden Eagle',          emoji:'🦅', u:'1f985', cost:182, upkeep:15, income:22, rarity:'LC', mass:'medium', kg:'4 kg',       zone:'mountain',   desc:"North America's most powerful eagle" },
+    { id:'snow_monkey',      name:'Japanese Macaque',      emoji:'🐒', u:'1f412', cost:145, upkeep:14, income:19, rarity:'LC', mass:'small',  kg:'12 kg',      zone:'mountain',   desc:'Snow-bathing monkey of the Japanese Alps' },
+    // ── OCEANIA ──
+    { id:'wombat',           name:'Wombat',               emoji:'🐾', u:'custom:sprites/wombat.svg', cost:78,  upkeep:7,  income:12, rarity:'LC', mass:'small',  kg:'35 kg',      zone:'oceania',    desc:'Barrel-shaped marsupial that digs epic burrows' },
+    { id:'platypus',         name:'Duck-billed Platypus', emoji:'🦆', u:'custom:sprites/platypus.svg', cost:165, upkeep:14, income:20, rarity:'NT', mass:'small',  kg:'2 kg',       zone:'oceania',    desc:'Venomous, egg-laying, bill-nosed mammal oddity!' },
+    { id:'emu',              name:'Emu',                  emoji:'🦤', u:'1f9a4', cost:88,  upkeep:8,  income:13, rarity:'LC', mass:'large',  kg:'58 kg',      zone:'oceania',    desc:"Australia's tallest bird — flightless & fast!" },
+    { id:'cassowary',        name:'Southern Cassowary',   emoji:'🐦', u:'custom:sprites/cassowary.svg', cost:142, upkeep:14, income:19, rarity:'VU', mass:'large',  kg:'58 kg',      zone:'oceania',    desc:'Helmeted rainforest giant with razor-sharp claws' },
+    { id:'tasmanian_devil',  name:'Tasmanian Devil',      emoji:'🐾', u:'custom:sprites/tasmanian_devil.svg', cost:168, upkeep:15, income:21, rarity:'EN', mass:'small',  kg:'12 kg',      zone:'oceania',    desc:'Ferocious nocturnal marsupial with bone-crushing jaws' },
+    { id:'quokka',           name:'Quokka',               emoji:'🐾', u:'custom:sprites/quokka.svg', cost:62,  upkeep:5,  income:11, rarity:'VU', mass:'tiny',   kg:'4 kg',       zone:'oceania',    desc:"World's happiest animal — always looks like it's smiling!" },
+    { id:'dingo',            name:'Dingo',                emoji:'🐕', u:'1f415', cost:95,  upkeep:9,  income:14, rarity:'VU', mass:'medium', kg:'16 kg',      zone:'oceania',    desc:"Australia's wild dog — cunning apex predator" },
+    { id:'kookaburra',       name:'Laughing Kookaburra',  emoji:'🐦', u:'custom:sprites/kookaburra.svg', cost:55,  upkeep:4,  income:10, rarity:'LC', mass:'tiny',   kg:'0.5 kg',     zone:'oceania',    desc:'Giant kingfisher famous for its hilarious laughing call' },
+    // ── AQUARIUM ──
+    { id:'great_white',      name:'Great White Shark',     emoji:'🦈', u:'1f988', cost:278, upkeep:32, income:30, rarity:'VU', mass:'large',  kg:'1,100 kg',   zone:'aquarium',   desc:"Ocean's apex predator" },
+    { id:'octopus',          name:'Giant Pacific Octopus', emoji:'🐙', u:'1f419', cost:168, upkeep:18, income:22, rarity:'LC', mass:'medium', kg:'15 kg',      zone:'aquarium',   desc:'Intelligent eight-armed problem-solver' },
+    { id:'clownfish',        name:'Clownfish',             emoji:'🐠', u:'1f420', cost:38,  upkeep:3,  income:8,  rarity:'LC', mass:'tiny',   kg:'0.25 kg',    zone:'aquarium',   desc:'Colourful reef fish that lives in anemones' },
+    { id:'sea_turtle',       name:'Green Sea Turtle',      emoji:'🐢', u:'1f422', cost:215, upkeep:22, income:25, rarity:'EN', mass:'large',  kg:'160 kg',     zone:'aquarium',   desc:'Ancient ocean voyager that returns to its birth beach' },
+    { id:'orca',             name:'Orca',                  emoji:'🐋', u:'1f40b', cost:320, upkeep:50, income:45, rarity:'LC', mass:'giant',  kg:'5,400 kg',   zone:'aquarium',   desc:'The killer whale — highly social & intelligent' },
+    { id:'pufferfish',       name:'Pufferfish',            emoji:'🐡', u:'1f421', cost:55,  upkeep:5,  income:10, rarity:'LC', mass:'tiny',   kg:'1 kg',       zone:'aquarium',   desc:'Inflatable spiny fish with powerful toxin' },
+    { id:'lobster',          name:'American Lobster',      emoji:'🦞', u:'1f99e', cost:68,  upkeep:6,  income:12, rarity:'LC', mass:'small',  kg:'1 kg',       zone:'aquarium',   desc:'Clawed crustacean of the Atlantic coast' },
+    { id:'spider_crab',      name:'Japanese Spider Crab',  emoji:'🦀', u:'1f980', cost:112, upkeep:12, income:16, rarity:'LC', mass:'medium', kg:'20 kg',      zone:'aquarium',   desc:"World's largest arthropod with 4-metre leg-span!" },
+    { id:'dolphin',          name:'Bottlenose Dolphin',    emoji:'🐬', u:'1f42c', cost:205, upkeep:20, income:25, rarity:'LC', mass:'medium', kg:'300 kg',     zone:'aquarium',   desc:'Playful, intelligent ocean acrobat' },
+    { id:'hammerhead',       name:'Hammerhead Shark',      emoji:'🦈', u:'1f988', cost:265, upkeep:28, income:29, rarity:'CR', mass:'large',  kg:'580 kg',     zone:'aquarium',   desc:'Uniquely shaped shark with 360° vision' },
+    { id:'sea_lion',         name:'California Sea Lion',   emoji:'🦭', u:'1f9ad', cost:158, upkeep:15, income:20, rarity:'LC', mass:'medium', kg:'300 kg',     zone:'aquarium',   desc:'Acrobatic barking pinnipeds of the Pacific' },
+    { id:'moray_eel',        name:'Giant Moray Eel',       emoji:'🐍', u:'1f40d', cost:132, upkeep:13, income:18, rarity:'LC', mass:'medium', kg:'30 kg',      zone:'aquarium',   desc:'Serpentine ambush predator of coral reefs' },
+];
+const UPGRADES = [
+    { id:'fountain',   name:'Fountain',   emoji:'⛲', cost:75,  desc:'Beautiful centerpiece!' },
+    { id:'foodstand',  name:'Food Stand', emoji:'🍦', cost:95,  desc:'Yummy treats for visitors!' },
+    { id:'playground', name:'Playground', emoji:'🎠', cost:120, desc:'Fun for kids!' },
+    { id:'giftshop',   name:'Gift Shop',  emoji:'🎁', cost:150, desc:'Sell cool souvenirs!' },
+    { id:'zootrain',   name:'Zoo Train',  emoji:'🚂', cost:180, desc:'Tour your whole zoo!' },
+];
+
+const BUILDINGS = [
+    { id:'pavilion',    name:'Pavilion',          emoji:'🏛️', cost:200, desc:'Shaded rest area for visitors',              bonus:30  },
+    { id:'bustram',     name:'Bus Tram',           emoji:'🚎', cost:250, desc:'Hop-on hop-off tram tours the whole zoo',    bonus:40  },
+    { id:'petting',     name:'Petting Zoo',        emoji:'🐑', cost:280, desc:'Touch & feed friendly animals',              bonus:45  },
+    { id:'butterfly',   name:'Butterfly Garden',   emoji:'🦋', cost:285, desc:'Stunning walk-through butterfly exhibit',    bonus:50  },
+    { id:'kidszone',    name:'Kids Zone',          emoji:'🎪', cost:300, desc:'Interactive fun & learning for young visitors', bonus:55 },
+    { id:'aviary',      name:'Aviary',             emoji:'🦅', cost:310, desc:'Walk-through bird paradise',                 bonus:58  },
+    { id:'foodcourt',   name:'Food Court',         emoji:'🍽️', cost:350, desc:'Full dining with themed stalls & seating',  bonus:65  },
+    { id:'aquarium',    name:'Aquarium',           emoji:'🐠', cost:380, desc:'Underwater world under one roof',            bonus:70  },
+    { id:'reptile',     name:'Reptile House',      emoji:'🐍', cost:420, desc:'Explore cold-blooded creatures up close',   bonus:75  },
+    { id:'safari',      name:'Safari Jeep Tour',   emoji:'🚙', cost:400, desc:'Off-road adventure through the zoo',        bonus:80  },
+    { id:'balloon',     name:'Hot Air Balloons',   emoji:'🎈', cost:450, desc:'Aerial zoo tours — wow!',                   bonus:90  },
+    { id:'nightzoo',    name:'Night Zoo',          emoji:'🌙', cost:500, desc:'Magical evening tours under the stars',      bonus:95  },
+    { id:'amphitheatre',name:'Amphitheatre',       emoji:'🎭', cost:550, desc:'Live animal shows every hour',               bonus:110 },
+    { id:'ferriswheel', name:'Ferris Wheel',       emoji:'🎡', cost:600, desc:'Breathtaking aerial views of the whole zoo', bonus:120 },
+    { id:'hotel',       name:'Zoo Hotel',          emoji:'🏨', cost:650, desc:'Stay overnight with the animals!',           bonus:140 },
+];
+
+const ZONE_FOODS = [
+    { id:'tropical_fruit', zone:'tropical',   name:'Tropical Fruit Mix',   emoji:'🍌', cost:35, desc:'Bananas, mangoes & berries',                    boost:3 },
+    { id:'savanna_hay',    zone:'savanna',    name:'Savanna Hay Bundle',   emoji:'🌾', cost:45, desc:'Premium grass & hay for grazers',               boost:4 },
+    { id:'arctic_fish',    zone:'arctic',     name:'Arctic Fish Supply',   emoji:'🐟', cost:40, desc:'Fresh fish & krill for arctic animals',          boost:4 },
+    { id:'rainforest_mix', zone:'rainforest', name:'Rainforest Blend',     emoji:'🌿', cost:40, desc:'Exotic plants & insects',                       boost:3 },
+    { id:'river_plants',   zone:'river',      name:'River Plant Mix',      emoji:'🪴', cost:30, desc:'Aquatic greens for river animals',               boost:3 },
+    { id:'mountain_feed',  zone:'mountain',   name:'Mountain Meadow Mix',  emoji:'🍃', cost:45, desc:'Alpine herbs & seeds for highland animals',      boost:4 },
+    { id:'aquarium_feed',  zone:'aquarium',   name:'Ocean Seafood Pack',   emoji:'🦐', cost:50, desc:'Fresh fish, squid & krill for aquatic life',     boost:5 },
+    { id:'oceania_feed',   zone:'oceania',    name:'Outback Forage Mix',   emoji:'🌿', cost:42, desc:'Eucalyptus, native grasses & insects',           boost:4 },
+];
+
+const ZONE_UPGRADES = [
+    // ── TROPICAL ──
+    { id:'trop_u1', zone:'tropical',   tier:1, name:'Tropical Greenhouse',    emoji:'🌺', cost:150, desc:'Lush plant growth boosts animal happiness',           incomeBoost:2 },
+    { id:'trop_u2', zone:'tropical',   tier:2, name:'Tropical Waterfall',     emoji:'💦', cost:200, desc:'Cascading falls create a true jungle paradise',       incomeBoost:4 },
+    { id:'trop_u3', zone:'tropical',   tier:3, name:'Treetop Night Garden',   emoji:'🌙', cost:300, desc:'Magical after-dark tropical light experience',        incomeBoost:7 },
+    // ── SAVANNA ──
+    { id:'sav_u1',  zone:'savanna',    tier:1, name:'Savanna Watering Hole',  emoji:'💧', cost:150, desc:'Communal drinking spot attracts more visitors',       incomeBoost:2 },
+    { id:'sav_u2',  zone:'savanna',    tier:2, name:'Baobab Tree Landmark',   emoji:'🌳', cost:200, desc:'Iconic tree becomes the heart of the savanna',        incomeBoost:4 },
+    { id:'sav_u3',  zone:'savanna',    tier:3, name:'Sunrise Viewing Platform',emoji:'🌅', cost:300, desc:'Elevated deck with sweeping plains panorama',        incomeBoost:7 },
+    // ── ARCTIC ──
+    { id:'arc_u1',  zone:'arctic',     tier:1, name:'Arctic Ice Pool',        emoji:'🧊', cost:150, desc:'Cooling splash pool keeps arctic animals thriving',   incomeBoost:2 },
+    { id:'arc_u2',  zone:'arctic',     tier:2, name:'Aurora Light Show',      emoji:'🌌', cost:200, desc:'Simulated northern lights dazzle night visitors',     incomeBoost:4 },
+    { id:'arc_u3',  zone:'arctic',     tier:3, name:'Polar Research Station', emoji:'🔭', cost:300, desc:'Educational centre with live ice-cam feeds',          incomeBoost:7 },
+    // ── RAINFOREST ──
+    { id:'rain_u1', zone:'rainforest', tier:1, name:'Canopy Walkway',         emoji:'🌿', cost:150, desc:'Elevated walkway through the treetops',               incomeBoost:2 },
+    { id:'rain_u2', zone:'rainforest', tier:2, name:'Misting System',         emoji:'💨', cost:200, desc:'Humidity control keeps rainforest animals healthy',   incomeBoost:4 },
+    { id:'rain_u3', zone:'rainforest', tier:3, name:'Expedition Centre',      emoji:'🗺️', cost:300, desc:'Immersive research experience with expert guides',    incomeBoost:7 },
+    // ── RIVER ──
+    { id:'riv_u1',  zone:'river',      tier:1, name:'Underwater Viewing',     emoji:'👁️', cost:150, desc:'Glass-panel windows into the river world',            incomeBoost:2 },
+    { id:'riv_u2',  zone:'river',      tier:2, name:'River Boat Tour',        emoji:'🚣', cost:200, desc:'Guided journey past all riverside habitats',          incomeBoost:4 },
+    { id:'riv_u3',  zone:'river',      tier:3, name:'River Research Station', emoji:'🎣', cost:300, desc:'Live-camera research exhibits for every visitor',     incomeBoost:7 },
+    // ── MOUNTAIN ──
+    { id:'mtn_u1',  zone:'mountain',   tier:1, name:'Mountain Trail',         emoji:'🥾', cost:150, desc:'Winding alpine walking paths through the zone',       incomeBoost:2 },
+    { id:'mtn_u2',  zone:'mountain',   tier:2, name:'Mountain Cable Car',     emoji:'🚡', cost:200, desc:'Scenic gondola ride over mountain enclosures',        incomeBoost:4 },
+    { id:'mtn_u3',  zone:'mountain',   tier:3, name:'Summit Lookout',         emoji:'🏔️', cost:300, desc:'Panoramic peak viewpoint with telescope',            incomeBoost:7 },
+    // ── AQUARIUM ──
+    { id:'aqu_u1',  zone:'aquarium',   tier:1, name:'Touch Pool',             emoji:'🤲', cost:150, desc:'Hands-on pool with safe sea creatures',               incomeBoost:2 },
+    { id:'aqu_u2',  zone:'aquarium',   tier:2, name:'Underwater Tunnel',      emoji:'🌊', cost:200, desc:'Walk-through shark & ray overhead tunnel',            incomeBoost:4 },
+    { id:'aqu_u3',  zone:'aquarium',   tier:3, name:'Deep Ocean Exhibit',     emoji:'🔦', cost:300, desc:'Bioluminescent deep-sea experience unlike any other', incomeBoost:7 },
+    // ── OCEANIA ──
+    { id:'oce_u1',  zone:'oceania',    tier:1, name:'Aboriginal Art Walk',    emoji:'🎨', cost:150, desc:'Colourful cultural walkways enrich the visitor experience', incomeBoost:2 },
+    { id:'oce_u2',  zone:'oceania',    tier:2, name:'Outback Sunset Deck',    emoji:'🌅', cost:200, desc:'Watch the sky turn crimson over the Oceania zone',    incomeBoost:4 },
+    { id:'oce_u3',  zone:'oceania',    tier:3, name:'Great Barrier Reef Display',emoji:'🪸',cost:300, desc:'Spectacular living coral exhibit showcasing Pacific life', incomeBoost:7 },
+];
+
+const CROSS_UPGRADES = [
+    { id:'skybridge',     name:'Rainforest–Savanna Skybridge', emoji:'🌉', cost:280, desc:'Elevated treetop walkway linking jungle & plains',  zones:['rainforest','savanna'],  incomeBoost:3 },
+    { id:'arctic_tunnel', name:'Arctic–River Tunnel',          emoji:'🚇', cost:260, desc:'Underground passage connecting cold & wet worlds',  zones:['arctic','river'],        incomeBoost:3 },
+    { id:'mtn_cable',     name:'Mountain–Savanna Cable Car',   emoji:'🚡', cost:310, desc:'Aerial cable linking highlands to the open plains', zones:['mountain','savanna'],    incomeBoost:4 },
+    { id:'aqu_boardwalk', name:'Aquarium–River Boardwalk',     emoji:'🚶', cost:240, desc:'Scenic waterfront path connecting aquatic zones',   zones:['aquarium','river'],      incomeBoost:3 },
+    { id:'jungle_path',   name:'Tropical–Rainforest Path',     emoji:'🌳', cost:220, desc:'Lush jungle trail connecting both tropical zones',  zones:['tropical','rainforest'], incomeBoost:3 },
+    { id:'oce_coastal',   name:'Oceania–Aquarium Coastal Walk',emoji:'🏝️', cost:255, desc:'Sandy coastal trail connecting Oceania to the aquarium', zones:['oceania','aquarium'],  incomeBoost:3 },
+];
+
+const ACHIEVEMENTS = [
+    { id:'first_animal',  emoji:'🐾', name:'Animal Lover!',      desc:'Buy your first animal' },
+    { id:'zoo_three',     emoji:'🦁', name:'Growing Zoo!',       desc:'Own 3 different species' },
+    { id:'all_animals',   emoji:'🌟', name:'Full Collection!',   desc:'Own every animal species' },
+    { id:'streak_5',      emoji:'🔥', name:'On Fire!',           desc:'Get a 5-answer streak' },
+    { id:'streak_10',     emoji:'💥', name:'Unstoppable!',       desc:'Get a 10-answer streak' },
+    { id:'correct_25',    emoji:'⭐', name:'25 Correct!',        desc:'Answer 25 questions right' },
+    { id:'correct_100',   emoji:'🏆', name:'Math Champion!',     desc:'Answer 100 questions right' },
+    { id:'level_5',       emoji:'🎓', name:'Zookeeper Pro!',     desc:'Reach level 5 (Head Zookeeper)' },
+    { id:'rich',          emoji:'💰', name:'Well Funded!',       desc:'Have $200 at once' },
+    { id:'emerg_hero',    emoji:'🚨', name:'Emergency Hero!',    desc:'Solve 3 emergencies correctly' },
+    { id:'builder',       emoji:'🏗️', name:'Builder!',          desc:'Add your first upgrade' },
+    { id:'all_zones',     emoji:'🌍', name:'World Explorer!',    desc:'Own animals from all 7 zones' },
+];
+
+const EVENTS = [
+    { emoji:'🐣', text:(a)=>`A baby ${a.name} was born! Your herd grows!`,    effect:(S,a)=>{ S.animals[a.id]=(S.animals[a.id]||1)+1; },  needsAnimal:true },
+    { emoji:'🎉', text:(a)=>`Record visitor day thanks to the ${a.name}!`,     effect:(S)=>{ S.money+=20; },                              needsAnimal:true },
+    { emoji:'🎪', text:()=>`A school group visited! Lots of excitement!`,      effect:(S)=>{ S.money+=15; },                              needsAnimal:false },
+    { emoji:'🌧️', text:()=>`Rainy day — fewer visitors but happy hippos!`,    effect:(S)=>{ S.money-=5; },                               needsAnimal:false },
+    { emoji:'🎵', text:(a)=>`The ${a.name} put on a show — crowd loved it!`,   effect:(S)=>{ S.money+=25; },                              needsAnimal:true },
+    { emoji:'🌈', text:()=>`Beautiful rainbow over the zoo! Extra visitors!`,  effect:(S)=>{ S.money+=10; },                              needsAnimal:false },
+    { emoji:'🏅', text:()=>`Your zoo won "Most Fun Zoo" award! +$30!`,         effect:(S)=>{ S.money+=30; },                              needsAnimal:false },
+    { emoji:'🐾', text:(a)=>`${a.name} escaped but came right back! 😅`,       effect:()=>{},                                             needsAnimal:true },
+];
+
+// 10 levels — each requires 50 correct answers to advance
+const LEVELS = [
+    { label:'Zookeeper Trainee' },       // 1  (0–49 correct)
+    { label:'Junior Zookeeper' },        // 2  (50–99)
+    { label:'Zookeeper' },               // 3  (100–149)
+    { label:'Senior Zookeeper' },        // 4  (150–199)
+    { label:'Head Zookeeper' },          // 5  (200–249)
+    { label:'Zoo Supervisor' },          // 6  (250–299)
+    { label:'Zoo Manager' },             // 7  (300–349)
+    { label:'Assistant Zoo Director' },  // 8  (350–399)
+    { label:'Zoo Director' },            // 9  (400–449)
+    { label:'Master Zoo Director ★' },   // 10 (450+)
+];
+
+// Earnings per correct answer, one entry per level
+const EARN   = [5, 6, 7, 8, 9, 10, 12, 14, 17, 20];
+// Streak bonuses [3-streak, 5-streak] per level
+const SBONUS = [[1,3],[2,3],[2,4],[2,4],[3,5],[3,5],[3,5],[4,6],[4,6],[5,8]];
+
+// ─────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────
+const S = {
+    money: 75,
+    score: 0,
+    streak: 0,
+    level: 1,
+    animals: {},
+    upgrades: {},
+    answered: false,
+    question: null,
+    qCount: 0,
+    CYCLE: 5,
+    // Adaptive learning
+    recentWrong: [],    // sliding window (max 8) of recently wrong opTypes
+    practiceType: null, // if set, next questions force this op type
+    practiceLeft: 0,    // remaining forced-practice questions
+    // Level progression
+    correctCount: 0,   // total correct answers — drives level gating (50 per level)
+    // Op picker
+    activeOps: ['add','sub'],  // which op types are toggled on (mul starts off so clicking it enables it)
+    // Zoo emergencies
+    nextChallenge: 16, // decrement each question; fire emergency at ≤0
+    diffSlot: 0,       // cycles 0-5: 0-1=easy, 2-3=medium, 4-5=hard (then repeats)
+    // Achievements & stats
+    badges: [],          // earned achievement IDs
+    emergencyWins: 0,    // correct emergency answers
+    bestStreak: 0,       // all-time best streak
+    totalEarned: 0,      // total $ earned (for stats)
+    // Day/night cycle (0=morning 1=afternoon 2=sunset 3=night)
+    dayPhase: 0,
+    // Next event counter
+    nextEvent: 8,
+    // Buildings in Visit tab
+    buildings: {},
+    // Animal food purchases (zone food id → count bought)
+    food: {},
+    // Zone-specific 3-tier upgrades (upgrade id → 1 if purchased)
+    zoneUpgrades: {},
+    // Cross-zone connection upgrades (upgrade id → 1 if purchased)
+    crossUpgrades: {},
+    // Player avatar customization
+    avatar: { name:'Zookeeper', skin:'#FDBCB4', hairStyle:'short', hairColor:'#1a0f00', shirtColor:'#4caf50', hat:'none', eyes:'happy', accessory:'none' },
+    // Food match best score (persisted)
+    matchBest: 0,
+};
+
+// ─────────────────────────────────────────────────
+//  SPRITE HELPER
+// ─────────────────────────────────────────────────
+function spr(u, emoji, size=72) {
+    // u values prefixed with 'custom:' point to local SVG sprites for animals with no accurate emoji
+    const src = u.startsWith('custom:') ? u.slice(7) : `${TW}${u}.svg`;
+    const fb=Math.round(size*.85);
+    return `<div style="width:${size}px;height:${size}px;margin:0 auto;display:flex;align-items:center;justify-content:center">
+        <img class="spr" src="${src}" width="${size}" height="${size}" alt="${emoji}"
+            onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="spr-fb" style="font-size:${fb}px;display:none">${emoji}</span>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────
+//  AUDIO
+// ─────────────────────────────────────────────────
+let _ac=null;
+function getAC(){ return _ac||(_ac=new (window.AudioContext||window.webkitAudioContext)()); }
+function beep(type){
+    try{
+        const ctx=getAC(), g=ctx.createGain(); g.connect(ctx.destination);
+        const o=ctx.createOscillator(); o.connect(g);
+        if(type==='ok'){
+            [523,659,784].forEach((f,i)=>o.frequency.setValueAtTime(f,ctx.currentTime+i*.1));
+            g.gain.setValueAtTime(.2,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);
+            o.start(); o.stop(ctx.currentTime+.5);
+        }else if(type==='no'){
+            o.frequency.setValueAtTime(220,ctx.currentTime); o.frequency.setValueAtTime(160,ctx.currentTime+.12);
+            g.gain.setValueAtTime(.18,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.35);
+            o.start(); o.stop(ctx.currentTime+.35);
+        }else if(type==='buy'){
+            [440,660,880].forEach((f,i)=>{
+                const o2=ctx.createOscillator(),g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination);
+                o2.frequency.setValueAtTime(f,ctx.currentTime+i*.09);
+                g2.gain.setValueAtTime(.14,ctx.currentTime+i*.09); g2.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.09+.25);
+                o2.start(ctx.currentTime+i*.09); o2.stop(ctx.currentTime+i*.09+.25);
+            });
+        }else if(type==='lvl'){
+            [523,659,784,1047].forEach((f,i)=>{
+                const o2=ctx.createOscillator(),g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination);
+                o2.frequency.setValueAtTime(f,ctx.currentTime+i*.12);
+                g2.gain.setValueAtTime(.18,ctx.currentTime+i*.12); g2.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.12+.3);
+                o2.start(ctx.currentTime+i*.12); o2.stop(ctx.currentTime+i*.12+.3);
+            });
+        }else if(type==='emergency'){
+            // Low-then-high alarm pulse
+            [220,180,220,180].forEach((f,i)=>{
+                const o2=ctx.createOscillator(),g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination);
+                o2.frequency.setValueAtTime(f,ctx.currentTime+i*.15);
+                g2.gain.setValueAtTime(.15,ctx.currentTime+i*.15); g2.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.15+.12);
+                o2.start(ctx.currentTime+i*.15); o2.stop(ctx.currentTime+i*.15+.12);
+            });
+        }
+    }catch(e){}
+}
+
+// Question generation is in questions.js (loaded above)
+
+// ─────────────────────────────────────────────────
+//  GAME LOGIC
+// ─────────────────────────────────────────────────
+function loadQuestion(){
+    S.answered=false;
+    S.question=generateQuestion();
+    const q=S.question, choices=makeChoices(q.answer);
+
+    // Practice bar
+    const pb=document.getElementById('practiceBar');
+    if(S.practiceType && S.practiceLeft>=0 && !q.isChallenge){
+        const opNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division'};
+        pb.textContent=`🎯 Practice round! Let's try ${opNames[S.practiceType]||S.practiceType} again with new numbers.`;
+        pb.classList.add('show');
+    } else { pb.classList.remove('show'); }
+
+    // Emergency header + stakes
+    const qCard=document.getElementById('qCard');
+    const eh=document.getElementById('emergHeader');
+    const st=document.getElementById('stakes');
+    if(q.isChallenge){
+        qCard.classList.add('emergency');
+        eh.classList.add('show');
+        st.classList.add('show');
+        st.innerHTML=`<span class="stake-good">✅ Correct → pay $${q.correctCost}</span>
+                      <span class="stake-bad">❌ Wrong → pay $${q.wrongCost}</span>`;
+        beep('emergency');
+    } else {
+        qCard.classList.remove('emergency');
+        eh.classList.remove('show');
+        st.classList.remove('show');
+    }
+
+    // Tag styling
+    const tag=document.getElementById('qTag');
+    tag.textContent=q.tag;
+    tag.className='q-tag'+(q.isChallenge?' emergency':q.tag.includes('★')?' hard':'');
+
+    document.getElementById('qText').textContent=q.text;
+    document.getElementById('hintBox').className='hint-box';
+    document.getElementById('feedback').className='feedback';
+    document.getElementById('nextBtn').className='next-btn';
+
+    const grid=document.getElementById('answers');
+    grid.innerHTML='';
+    choices.forEach(val=>{
+        const btn=document.createElement('button');
+        btn.className='ans-btn'; btn.textContent=val; btn.dataset.val=val;
+        btn.onclick=()=>checkAnswer(val,btn);
+        grid.appendChild(btn);
+    });
+}
+
+function checkAnswer(chosen, btn){
+    if(S.answered) return;
+    S.answered=true;
+    document.querySelectorAll('.ans-btn').forEach(b=>b.style.pointerEvents='none');
+    const q=S.question, fb=document.getElementById('feedback'), hb=document.getElementById('hintBox');
+    const correct=(chosen===q.answer);
+
+    if(q.isChallenge){
+        // ── Challenge outcome ──
+        const cost=correct?q.correctCost:q.wrongCost;
+        S.money=Math.max(0, S.money-cost);
+        if(correct){
+            btn.classList.add('correct');
+            S.streak++; S.correctCount++; S.emergencyWins++;
+            if(S.streak>S.bestStreak) S.bestStreak=S.streak;
+            fb.textContent=q.correctOutcome+` 💰 -$${cost}`;
+            fb.className='feedback show challenge-win';
+            beep('ok'); spawnFloat(-cost,'#c62828');
+            showHint(q, hb, true);
+            checkAchievements(); saveGame();
+        } else {
+            btn.classList.add('wrong');
+            document.querySelectorAll('.ans-btn').forEach(b=>{ if(parseInt(b.dataset.val)===q.answer) b.classList.add('correct'); });
+            S.streak=0;
+            fb.textContent=q.wrongOutcome+` 💸 -$${cost}`;
+            fb.className='feedback show challenge-lose';
+            beep('no');
+            // Show hint for wrong challenge answer
+            showHint(q, hb);
+            // Adaptive tracking
+            trackWrong(q.opType);
+            saveGame();
+        }
+    } else {
+        // ── Normal question outcome ──
+        if(correct){
+            btn.classList.add('correct');
+            S.streak++; S.correctCount++;
+            // Tier-based earnings: easy=$6, medium=$12, hard 3-digit=$18
+            const tierBase=[0,6,12,18];
+            const base=tierBase[q.earnTier||1];
+            const lv=S.level-1;
+            const sb=SBONUS[Math.min(lv,SBONUS.length-1)];
+            let earned=base;
+            if(S.streak>=5) earned+=sb[1]; else if(S.streak>=3) earned+=sb[0];
+            S.money+=earned; S.score+=earned;
+            const sx=S.streak>=5?' 🔥🔥 Super streak!':S.streak>=3?' 🔥 Streak bonus!':'';
+            // If we just nailed a practice question, give extra praise
+            const wasPractice=S.practiceType===q.opType && S.practiceLeft===0;
+            if(wasPractice){
+                fb.textContent=`🌟 Practice mastered! Great work on ${q.tag.replace(/[★]/g,'').trim()}! +$${earned}`;
+                S.practiceType=null;
+                S.recentWrong=S.recentWrong.filter(t=>t!==q.opType);
+            } else {
+                fb.textContent=pick([`🎉 Amazing! +$${earned}!${sx}`,`⭐ Correct! +$${earned}!${sx}`,
+                                     `🌟 Fantastic! +$${earned}!${sx}`,`🏆 Nailed it! +$${earned}!${sx}`]);
+            }
+            fb.className='feedback show correct';
+            S.totalEarned+=earned;
+            if(S.streak>S.bestStreak) S.bestStreak=S.streak;
+            // Advance day/night phase every 15 questions
+            S.dayPhase=Math.min(3,Math.floor(S.qCount/15));
+            beep('ok'); spawnFloat(earned,'#2e7d32'); checkLevelUp();
+            showHint(q, hb, true);
+            checkAchievements(); saveGame();
+        } else {
+            btn.classList.add('wrong');
+            document.querySelectorAll('.ans-btn').forEach(b=>{ if(parseInt(b.dataset.val)===q.answer) b.classList.add('correct'); });
+            S.streak=0;
+            const tierBase=[0,6,12,18];
+            const penalty=tierBase[q.earnTier||1];
+            S.money=Math.max(0, S.money-penalty);
+            S.score=Math.max(0, S.score-penalty);
+            fb.textContent=`❌ The answer was ${q.answer}. -$${penalty} 💸`;
+            fb.className='feedback show wrong'; beep('no');
+            spawnFloat(-penalty,'#c62828');
+            showHint(q, hb);
+            trackWrong(q.opType);
+            saveGame();
+        }
+    }
+
+    S.qCount++;
+    updateUI();
+    document.getElementById('nextBtn').className='next-btn show';
+    if(S.qCount%S.CYCLE===0 && Object.keys(S.animals).length>0)
+        setTimeout(showCycle,900);
+}
+
+function showHint(q, hb, isCorrect=false){
+    const h=makeHint(q);
+    if(!h){ hb.className='hint-box'; return; }
+    const label=isCorrect ? "💡 Here's how it works!" : '💡 HINT';
+    let html=`<div class="hint-label">${label}</div>${h.text}`;
+    if(h.work) html+=`<div style="text-align:center;margin-top:8px"><div class="workthrough">${h.work}</div></div>`;
+    if(h.extra) html+=h.extra;
+    hb.innerHTML=html;
+    hb.className=isCorrect ? 'hint-box show correct-hint' : 'hint-box show';
+}
+
+function trackWrong(opType){
+    if(!opType||opType==='econ'||opType==='challenge') return;
+    S.recentWrong.push(opType);
+    if(S.recentWrong.length>8) S.recentWrong.shift();
+    // If 2+ of same type in window and not already in practice, set practice mode
+    const cnt=S.recentWrong.filter(t=>t===opType).length;
+    if(cnt>=2 && S.practiceType!==opType){
+        S.practiceType=opType;
+        S.practiceLeft=2; // 2 extra practice questions
+    }
+}
+
+function nextQuestion(){ if(!S.answered) return; loadQuestion(); }
+
+// ── Op picker toggle ──
+function toggleOp(op){
+    const idx=S.activeOps.indexOf(op);
+    if(idx>=0){
+        if(S.activeOps.length<=1){ showToast('😊 Keep at least one type on!'); return; }
+        S.activeOps.splice(idx,1);
+    } else {
+        S.activeOps.push(op);
+    }
+    renderOpPicker();
+    // Preserve the question counters — toggling an op just refreshes the question
+    // display; it should NOT count as answering a question or advance the difficulty
+    // cycle / emergency countdown.
+    const savedNc=S.nextChallenge, savedDs=S.diffSlot;
+    loadQuestion();
+    S.nextChallenge=savedNc; S.diffSlot=savedDs;
+}
+function renderOpPicker(){
+    document.querySelectorAll('.op-btn').forEach(btn=>{
+        const on=S.activeOps.includes(btn.dataset.op);
+        btn.classList.toggle('op-off',!on);
+    });
+}
+
+// ─────────────────────────────────────────────────
+//  ACHIEVEMENTS
+// ─────────────────────────────────────────────────
+function checkAchievements(){
+    const defs={
+        first_animal:  ()=>Object.keys(S.animals).length>=1,
+        zoo_three:     ()=>Object.keys(S.animals).length>=3,
+        all_animals:   ()=>ANIMALS.every(a=>(S.animals[a.id]||0)>0),
+        streak_5:      ()=>S.streak>=5,
+        streak_10:     ()=>S.streak>=10,
+        correct_25:    ()=>S.correctCount>=25,
+        correct_100:   ()=>S.correctCount>=100,
+        level_5:       ()=>S.level>=5,
+        rich:          ()=>S.money>=200,
+        emerg_hero:    ()=>S.emergencyWins>=3,
+        builder:       ()=>Object.keys(S.upgrades).length>=1,
+        all_zones:     ()=>{
+            const owned=new Set(Object.keys(S.animals).map(id=>ANIMALS.find(a=>a.id===id)?.zone));
+            return Object.keys(ZONES).every(z=>owned.has(z));
+        },
+    };
+    ACHIEVEMENTS.forEach(a=>{
+        if(!S.badges.includes(a.id) && defs[a.id]?.()){
+            S.badges.push(a.id);
+            showBadgeToast(a);
+            saveGame();
+        }
+    });
+}
+
+function showBadgeToast(a){
+    const e=document.createElement('div');
+    e.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#ffd740,#ff6d00);color:#fff;padding:18px 34px;border-radius:22px;font-family:Nunito,cursive;font-weight:900;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none';
+    e.innerHTML=`🏅 Badge Earned!<br><span style="font-size:2em;line-height:1.6">${a.emoji}</span><br><span style="font-size:.85em">${a.name}</span>`;
+    document.body.appendChild(e);
+    requestAnimationFrame(()=>{ e.style.transform='translate(-50%,-50%) scale(1)'; });
+    setTimeout(()=>{ e.style.transform='translate(-50%,-50%) scale(0)'; setTimeout(()=>e.remove(),500); },2500);
+}
+
+function checkLevelUp(){
+    const maxLv=LEVELS.length;
+    while(S.level<maxLv && S.correctCount>=S.level*50){
+        S.level++;
+        beep('lvl');
+        const b=document.getElementById('lvlup');
+        b.innerHTML=`🎊 Level Up! 🎊<br><span style="font-size:.55em">${LEVELS[S.level-1].label}</span>`;
+        b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),2800);
+    }
+}
+
+// ─────────────────────────────────────────────────
+//  ZOO CYCLE
+// ─────────────────────────────────────────────────
+function calcUpkeep(){ return Object.entries(S.animals).reduce((s,[id,cnt])=>{ const a=ANIMALS.find(x=>x.id===id); return s+(a?a.upkeep*cnt:0); },0); }
+function calcIncome(){ return Object.entries(S.animals).reduce((s,[id,cnt])=>{ const a=ANIMALS.find(x=>x.id===id); if(!a) return s; const zf=ZONE_FOODS.find(f=>f.zone===a.zone); const foodBoost=zf?(S.food[zf.id]||0)*zf.boost:0; const zuBoost=ZONE_UPGRADES.filter(u=>u.zone===a.zone).reduce((acc,u)=>acc+(S.zoneUpgrades[u.id]?u.incomeBoost:0),0); const cuBoost=CROSS_UPGRADES.filter(u=>u.zones.includes(a.zone)).reduce((acc,u)=>acc+(S.crossUpgrades[u.id]?u.incomeBoost:0),0); return s+(a.income+foodBoost+zuBoost+cuBoost)*cnt; },0); }
+
+function triggerEvent(){
+    S.nextEvent=rnd(7,12);
+    const ownedIds=Object.keys(S.animals).filter(id=>S.animals[id]>0);
+    if(!ownedIds.length) return null;
+    const viable=EVENTS.filter(e=>!e.needsAnimal||ownedIds.length>0);
+    if(!viable.length) return null;
+    const ev=pick(viable);
+    const animal=ev.needsAnimal ? ANIMALS.find(a=>a.id===pick(ownedIds)) : null;
+    const before=S.money;
+    ev.effect(S, animal);
+    S.money=Math.max(0,S.money);
+    const delta=S.money-before;
+    return { emoji:ev.emoji, text:ev.text(animal||{}), delta };
+}
+
+function showCycle(){
+    const upkeep=calcUpkeep(), income=calcIncome(), net=income-upkeep;
+    S.money=Math.max(0, S.money+net);
+    S.totalEarned+=Math.max(0,net);
+
+    // Maybe trigger a random event
+    S.nextEvent--;
+    let eventHtml='';
+    if(S.nextEvent<=0 && Object.keys(S.animals).length>0){
+        const ev=triggerEvent();
+        if(ev){
+            const dc=ev.delta>0?'cy-pos':ev.delta<0?'cy-neg':'';
+            const ds=ev.delta>0?`+$${ev.delta}`:ev.delta<0?`-$${Math.abs(ev.delta)}`:'';
+            eventHtml=`<hr class="cycle-divider">
+                <div class="cycle-row"><span>${ev.emoji} ${ev.text}</span><span class="${dc}">${ds}</span></div>`;
+        }
+    }
+
+    document.getElementById('cycleRows').innerHTML=`
+        <div class="cycle-row"><span>🎟️ Ticket income</span><span class="cy-pos">+$${income}</span></div>
+        <div class="cycle-row"><span>🥩 Animal upkeep</span><span class="cy-neg">-$${upkeep}</span></div>
+        ${eventHtml}`;
+    const nc=net>=0?'cy-pos':'cy-neg', ns=net>=0?'+':'';
+    document.getElementById('cycleNet').innerHTML=`Net this cycle: <span class="${nc}">${ns}$${net}</span>`;
+    document.getElementById('cycleBanner').classList.add('show');
+    updateUI();
+}
+function closeCycle(){ document.getElementById('cycleBanner').classList.remove('show'); }
+
+// ─────────────────────────────────────────────────
+//  UI
+// ─────────────────────────────────────────────────
+function updateUI(){
+    document.getElementById('moneyBadge').textContent  =`💰 $${S.money}`;
+    document.getElementById('scoreBadge').textContent  =`⭐ ${S.correctCount} correct`;
+    document.getElementById('streakBadge').textContent =`🔥 Streak: ${S.streak}`;
+    document.getElementById('levelBadge').textContent  =LEVELS[S.level-1].label;
+    // Progress = how far through the 50-answer band for this level
+    const pct=S.level>=LEVELS.length ? 100
+             : Math.min(((S.correctCount-(S.level-1)*50)/50)*100, 100);
+    document.getElementById('progressFill').style.width=pct+'%';
+    const tab=document.querySelector('.tab.active')?.dataset.tab;
+    if(tab==='zoo')      renderZoo();
+    if(tab==='shop')     renderShop();
+    if(tab==='progress') renderProgress();
+}
+
+function renderZoo(){
+    const grid=document.getElementById('zooGrid'), statsRow=document.getElementById('zooStatsRow');
+    const totalAnimals=Object.values(S.animals).reduce((s,c)=>s+c,0);
+    const upkeep=calcUpkeep(), income=calcIncome();
+    const visitors=totalAnimals*15+Object.keys(S.upgrades).length*30;
+    statsRow.innerHTML=`
+        <div class="zoo-stat">🐾 Animals: ${totalAnimals}</div>
+        <div class="zoo-stat">👥 Visitors: ~${visitors}/day</div>
+        <div class="zoo-stat">⬆ Upkeep: $${upkeep}/cycle</div>
+        <div class="zoo-stat">🎟 Income: $${income}/cycle</div>`;
+    const items=[
+        ...Object.entries(S.animals).map(([id,cnt])=>{
+            const a=ANIMALS.find(x=>x.id===id), net=(a.income-a.upkeep)*cnt;
+            return `<div class="exhibit">${spr(a.u,a.emoji,72)}<div class="nm">${a.name}</div><div class="ct">×${cnt}</div><div class="net ${net>=0?'pos':'neg'}">${net>=0?'+':''}$${net}/cycle</div></div>`;
+        }),
+        ...Object.entries(S.upgrades).map(([id,cnt])=>{
+            const u=UPGRADES.find(x=>x.id===id);
+            return `<div class="exhibit"><div class="spr-fb" style="font-size:3em">${u.emoji}</div><div class="nm">${u.name}</div><div class="ct">×${cnt}</div></div>`;
+        }),
+    ];
+    grid.innerHTML=items.length?items.join(''):`<div class="empty-zoo"><div style="font-size:3.5em">🌱</div>
+        <p style="margin-top:12px;font-weight:700;color:#555">Your zoo is empty!<br>Answer questions to earn money,<br>then visit the <strong>Shop</strong>!</p></div>`;
+
+    // Trophy case
+    const earned=ACHIEVEMENTS.filter(a=>S.badges.includes(a.id));
+    const tc=document.getElementById('trophyCase');
+    if(tc){
+        tc.innerHTML=earned.length
+            ?`<div style="font-weight:900;color:#ff7043;font-size:.9em;margin-bottom:8px">🏅 Trophy Case (${earned.length}/${ACHIEVEMENTS.length})</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                ${earned.map(a=>`<div title="${a.desc}" style="background:linear-gradient(135deg,#fff8e1,#fffde7);border:2px solid #ffd740;border-radius:12px;padding:5px 10px;font-size:.78em;font-weight:700;cursor:help">${a.emoji} ${a.name}</div>`).join('')}
+              </div>`
+            :`<div style="color:#aaa;font-size:.82em;font-weight:700;text-align:center;padding:6px">🏅 Earn badges by playing!</div>`;
+    }
+}
+
+function renderShop(){
+    document.getElementById('rarityLegend').innerHTML=Object.entries(RARITY).map(([k,r])=>
+        `<span class="legend-pill" style="background:${r.color};color:${r.text}" title="${r.tip}">${r.label}</span>`).join('');
+    // Group animals by zone
+    const zoneOrder=['tropical','savanna','arctic','rainforest','river','mountain','aquarium','oceania'];
+    let shopHtml='';
+    zoneOrder.forEach(zid=>{
+        const z=ZONES[zid];
+        const zAnimals=ANIMALS.filter(a=>a.zone===zid);
+        if(!zAnimals.length) return;
+        shopHtml+=`<div style="margin-bottom:14px">
+            <div style="font-weight:900;font-size:.9em;color:${z.color};background:${z.bg};border:2px solid ${z.border};border-radius:10px;padding:5px 12px;margin-bottom:8px;display:inline-block">${z.label}</div>
+            <div class="shop-grid">`;
+        zAnimals.forEach(a=>{
+            const r=RARITY[a.rarity], owned=S.animals[a.id]||0, can=S.money>=a.cost;
+            shopHtml+=`<div class="shop-card${can?'':' cant-afford'}" onclick="buyAnimal('${a.id}')">
+                ${owned?`<div class="owned-badge">${owned}</div>`:''}
+                ${spr(a.u,a.emoji,72)}
+                <div class="animal-name">${a.name}</div>
+                <span class="rarity-pill" style="background:${r.color};color:${r.text}" title="${r.tip}">${r.label}</span>
+                <div class="mass-info">⚖️ ${a.kg} · ${MASS[a.mass].label}</div>
+                <div class="econ-row">
+                    <span class="econ-up" title="Upkeep per 5-question cycle">⬆ $${a.upkeep}</span>
+                    <span class="econ-in" title="Ticket income per cycle">🎟 $${a.income}</span>
+                </div>
+                <span class="price-btn">💰 $${a.cost}</span>
+            </div>`;
+        });
+        shopHtml+=`</div></div>`;
+    });
+    document.getElementById('animalShop').innerHTML=shopHtml;
+    document.getElementById('upgradeShop').innerHTML=UPGRADES.map(u=>{
+        const owned=S.upgrades[u.id]||0, can=S.money>=u.cost;
+        return `<div class="upg-card${can?'':' cant-afford'}" onclick="buyUpgrade('${u.id}')">
+            ${owned?`<div class="owned-badge">${owned}</div>`:''}
+            <div class="em-lg">${u.emoji}</div><div class="nm">${u.name}</div><div class="ds">${u.desc}</div>
+            <span class="price-btn">💰 $${u.cost}</span>
+        </div>`;
+    }).join('');
+    document.getElementById('foodShop').innerHTML=ZONE_FOODS.map(f=>{
+        const z=ZONES[f.zone], purchased=S.food[f.id]||0, can=S.money>=f.cost;
+        const totalBoost=purchased*f.boost;
+        return `<div class="food-card${can?'':' cant-afford'}" onclick="buyFood('${f.id}')">
+            ${purchased?`<div class="owned-badge">${purchased}</div>`:''}
+            <div class="f-em">${f.emoji}</div>
+            <div class="f-nm">${f.name}</div>
+            <div style="font-size:.68em;font-weight:700;margin-bottom:4px;padding:2px 7px;border-radius:8px;display:inline-block;background:${z.bg};color:${z.color};border:1px solid ${z.border}">${z.label}</div>
+            <div class="f-ds">${f.desc}</div>
+            <div class="f-boost">+$${f.boost}/animal/cycle${totalBoost?` · total +$${totalBoost}`:''}</div>
+            <span class="price-btn">💰 $${f.cost}</span>
+        </div>`;
+    }).join('');
+
+    // Zone Upgrades — grouped by zone, tier-locked
+    let zuHtml='';
+    zoneOrder.forEach(zid=>{
+        const z=ZONES[zid];
+        const upgrades=ZONE_UPGRADES.filter(u=>u.zone===zid).sort((a,b)=>a.tier-b.tier);
+        if(!upgrades.length) return;
+        zuHtml+=`<div class="zu-zone-block">
+            <div style="font-weight:900;font-size:.88em;color:${z.color};background:${z.bg};border:2px solid ${z.border};border-radius:10px;padding:4px 12px;margin-bottom:8px;display:inline-block">${z.label} Upgrades</div>
+            <div class="zu-grid">`;
+        upgrades.forEach(u=>{
+            const owned=!!S.zoneUpgrades[u.id];
+            const prevLocked=u.tier>1 && !S.zoneUpgrades[ZONE_UPGRADES.find(x=>x.zone===u.zone&&x.tier===u.tier-1)?.id];
+            const cantAfford=!owned && !prevLocked && S.money<u.cost;
+            let cls='zu-card';
+            if(owned) cls+=' zu-owned';
+            else if(prevLocked) cls+=' zu-locked';
+            else if(cantAfford) cls+=' cant-afford';
+            const tierColors=['','#7986cb','#ab47bc','#f57c00'];
+            const tierLabels=['','⭐ Tier 1','⭐⭐ Tier 2','⭐⭐⭐ Tier 3'];
+            zuHtml+=`<div class="${cls}" onclick="buyZoneUpgrade('${u.id}')">
+                ${owned?`<div class="owned-badge">✓</div>`:''}
+                <div class="zu-em">${u.emoji}</div>
+                <div class="zu-nm">${u.name}</div>
+                <span class="zu-tier" style="background:${tierColors[u.tier]}22;color:${tierColors[u.tier]};border:1px solid ${tierColors[u.tier]}44">${tierLabels[u.tier]}</span>
+                <div class="zu-ds">${owned?'✅ Built — +$'+u.incomeBoost+'/animal/cycle':prevLocked?'🔒 Locked — buy Tier '+(u.tier-1)+' first':u.desc}</div>
+                ${!owned?`<span class="price-btn" style="background:${tierColors[u.tier]};color:#fff;margin-top:5px">💰 $${u.cost}</span>`:''}
+            </div>`;
+        });
+        zuHtml+=`</div></div>`;
+    });
+    document.getElementById('zoneUpgShop').innerHTML=zuHtml;
+
+    // Cross-Zone Connections
+    document.getElementById('crossUpgShop').innerHTML=CROSS_UPGRADES.map(u=>{
+        const owned=!!S.crossUpgrades[u.id];
+        const can=S.money>=u.cost;
+        const z1=ZONES[u.zones[0]], z2=ZONES[u.zones[1]];
+        return `<div class="cross-card${owned?' cross-owned':can?'':' cant-afford'}" onclick="buyCrossUpgrade('${u.id}')">
+            ${owned?`<div class="owned-badge">✓</div>`:''}
+            <div class="cc-em">${u.emoji}</div>
+            <div class="cc-nm">${u.name}</div>
+            <div class="cc-zones">
+                <span style="background:${z1.bg};color:${z1.color};border:1px solid ${z1.border};border-radius:6px;padding:1px 6px">${z1.label}</span>
+                ↔
+                <span style="background:${z2.bg};color:${z2.color};border:1px solid ${z2.border};border-radius:6px;padding:1px 6px">${z2.label}</span>
+            </div>
+            <div class="cc-ds">${owned?'✅ Built! +$'+u.incomeBoost+'/animal in both zones':u.desc}</div>
+            ${!owned?`<span class="price-btn" style="background:#ff9800;color:#fff;margin-top:5px">💰 $${u.cost}</span>`:''}
+        </div>`;
+    }).join('');
+}
+
+function buyAnimal(id){
+    const a=ANIMALS.find(x=>x.id===id);
+    if(!a||S.money<a.cost){ showToast(`💸 Need $${(a?.cost||0)-S.money} more!`); return; }
+    S.money-=a.cost; S.animals[id]=(S.animals[id]||0)+1;
+    beep('buy'); showToast(`🎉 ${a.emoji} ${a.name} joins your zoo!`);
+    checkAchievements(); updateUI(); saveGame();
+}
+function buyUpgrade(id){
+    const u=UPGRADES.find(x=>x.id===id);
+    if(!u||S.money<u.cost){ showToast(`💸 Need $${(u?.cost||0)-S.money} more!`); return; }
+    S.money-=u.cost; S.upgrades[id]=(S.upgrades[id]||0)+1;
+    beep('buy'); showToast(`🎉 ${u.emoji} ${u.name} added to your zoo!`);
+    checkAchievements(); updateUI(); saveGame();
+}
+function buyFood(id){
+    const f=ZONE_FOODS.find(x=>x.id===id);
+    if(!f||S.money<f.cost){ showToast(`💸 Need $${(f?.cost||0)-S.money} more!`); return; }
+    S.money-=f.cost; S.food[id]=(S.food[id]||0)+1;
+    beep('buy'); showToast(`🎉 ${f.emoji} ${f.name} stocked! ${ZONES[f.zone].label} animals are thriving!`);
+    updateUI(); saveGame();
+}
+function buyZoneUpgrade(id){
+    const u=ZONE_UPGRADES.find(x=>x.id===id);
+    if(!u) return;
+    if(S.zoneUpgrades[u.id]){ showToast(`${u.emoji} ${u.name} is already built!`); return; }
+    // Tier locking: require previous tier first
+    if(u.tier>1){
+        const prev=ZONE_UPGRADES.find(x=>x.zone===u.zone && x.tier===u.tier-1);
+        if(prev && !S.zoneUpgrades[prev.id]){ showToast(`🔒 Build ${prev.name} first!`); return; }
+    }
+    if(S.money<u.cost){ showToast(`💸 Need $${u.cost-S.money} more!`); return; }
+    S.money-=u.cost; S.zoneUpgrades[u.id]=1;
+    beep('buy'); showToast(`🎉 ${u.emoji} ${u.name} built! ${ZONES[u.zone].label} animals earn +$${u.incomeBoost}/cycle each!`);
+    updateUI(); saveGame();
+}
+function buyCrossUpgrade(id){
+    const u=CROSS_UPGRADES.find(x=>x.id===id);
+    if(!u) return;
+    if(S.crossUpgrades[u.id]){ showToast(`${u.emoji} ${u.name} is already built!`); return; }
+    if(S.money<u.cost){ showToast(`💸 Need $${u.cost-S.money} more!`); return; }
+    S.money-=u.cost; S.crossUpgrades[u.id]=1;
+    beep('buy'); showToast(`🎉 ${u.emoji} ${u.name} is now open! Animals in both zones earn more!`);
+    updateUI(); saveGame();
+}
+
+// ─────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────
+let _tt=null;
+function showToast(msg){ const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('show'); if(_tt)clearTimeout(_tt); _tt=setTimeout(()=>e.classList.remove('show'),3000); }
+
+function spawnFloat(amount, color='#2e7d32'){
+    const e=document.createElement('div'); e.className='mfloat';
+    const sign=amount>=0?'+':'';
+    e.textContent=`${sign}$${Math.abs(amount)} ${amount>=0?'💰':'💸'}`;
+    e.style.color=color; e.style.left=rnd(20,65)+'%'; e.style.top='35%';
+    document.body.appendChild(e); setTimeout(()=>e.remove(),1500);
+}
+function switchTab(btn){
+    _zvActive=false;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    const name=btn.dataset.tab;
+    document.getElementById('tab-'+name).classList.add('active');
+    if(name==='zoo')      renderZoo();
+    if(name==='shop')     renderShop();
+    if(name==='zooview')  renderZooView();
+    if(name==='progress') renderProgress();
+    if(name==='match')    renderMatch();
+}
+
+function renderProgress(){
+    const wrap=document.getElementById('tab-progress');
+    const toNext=S.level<LEVELS.length ? (S.level*50)-S.correctCount : 0;
+    const pct=S.level>=LEVELS.length?100:Math.min(((S.correctCount-(S.level-1)*50)/50)*100,100);
+    const totalAnimals=Object.values(S.animals).reduce((s,c)=>s+c,0);
+    const earned=ACHIEVEMENTS.filter(a=>S.badges.includes(a.id));
+    const unearned=ACHIEVEMENTS.filter(a=>!S.badges.includes(a.id));
+
+    // Op accuracy bars (use recentWrong as a rough signal)
+    const opCounts={add:0,sub:0,mul:0,div:0};
+    S.recentWrong.forEach(t=>{ if(opCounts[t]!==undefined) opCounts[t]++; });
+    const opBars=Object.entries({add:'➕ Addition',sub:'➖ Subtraction',mul:'✖️ Multiplication',div:'➗ Division'})
+        .map(([k,label])=>{
+            const wrongs=opCounts[k], total=S.recentWrong.length||1;
+            const pctBad=Math.min(100,Math.round(wrongs/total*100));
+            const pctGood=100-pctBad;
+            return `<div style="margin:6px 0">
+                <div style="display:flex;justify-content:space-between;font-size:.78em;font-weight:700;margin-bottom:3px">
+                    <span>${label}</span><span style="color:${wrongs>1?'#c62828':'#2e7d32'}">${wrongs>1?'needs practice':'✓ good'}</span>
+                </div>
+                <div style="height:8px;border-radius:6px;background:#eee;overflow:hidden">
+                    <div style="height:100%;width:${pctGood}%;background:linear-gradient(90deg,#66bb6a,#4caf50);border-radius:6px;transition:width .5s"></div>
+                </div>
+            </div>`;
+        }).join('');
+
+    wrap.innerHTML=`<div style="background:#fff;border-radius:22px;padding:20px;box-shadow:0 5px 20px rgba(0,0,0,.15)">
+        <h2 style="text-align:center;color:#ff7043;font-size:1.2em;margin-bottom:14px">📊 My Progress</h2>
+
+        <!-- Avatar card -->
+        <div style="background:linear-gradient(135deg,#e3f2fd,#f3e5f5);border-radius:18px;padding:16px;margin-bottom:14px;text-align:center;border:2px solid #e1bee7;cursor:pointer" onclick="openAvatarEditor()">
+            ${renderAvatar(S.avatar, 72)}
+            <div style="font-size:.72em;font-weight:700;color:#9c27b0;margin-top:8px">✏️ Tap to customize your zookeeper!</div>
+        </div>
+
+        <!-- Level card -->
+        <div style="background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;border-radius:16px;padding:14px 18px;margin-bottom:14px">
+            <div style="font-size:.75em;opacity:.85;margin-bottom:2px">Current Level</div>
+            <div style="font-size:1.15em;font-weight:900">${LEVELS[S.level-1].label}</div>
+            <div style="background:rgba(255,255,255,.25);border-radius:8px;height:10px;margin:10px 0 4px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:#fff;border-radius:8px;transition:width .6s ease"></div>
+            </div>
+            <div style="font-size:.72em;opacity:.85">${S.level<LEVELS.length?`${toNext} more correct answers to next level`:'🌟 Maximum level reached!'}</div>
+        </div>
+
+        <!-- Stats grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            ${[
+                ['⭐','Total Correct',S.correctCount],
+                ['🔥','Best Streak',S.bestStreak],
+                ['🐾','Animals Owned',totalAnimals],
+                ['💰','Total Earned','$'+S.totalEarned],
+            ].map(([em,lbl,val])=>`<div style="background:#f8f9fa;border:2px solid #e9ecef;border-radius:14px;padding:12px;text-align:center">
+                <div style="font-size:1.6em">${em}</div>
+                <div style="font-size:1.15em;font-weight:900;color:#333">${val}</div>
+                <div style="font-size:.72em;color:#888;font-weight:700">${lbl}</div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Recent accuracy -->
+        <div style="background:#f8f9fa;border-radius:14px;padding:12px 14px;margin-bottom:14px">
+            <div style="font-weight:900;font-size:.88em;color:#555;margin-bottom:8px">📈 Recent Practice</div>
+            ${opBars}
+        </div>
+
+        <!-- Trophy case -->
+        <div style="background:#fffde7;border:2px solid #ffd740;border-radius:14px;padding:12px 14px;margin-bottom:14px">
+            <div style="font-weight:900;font-size:.88em;color:#e65100;margin-bottom:8px">🏅 Badges (${earned.length}/${ACHIEVEMENTS.length})</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:${unearned.length?'10':'0'}px">
+                ${earned.map(a=>`<div title="${a.desc}" style="background:#fff8e1;border:2px solid #ffd740;border-radius:10px;padding:5px 9px;font-size:.78em;font-weight:700;cursor:help">${a.emoji} ${a.name}</div>`).join('')||'<span style="color:#aaa;font-size:.82em">No badges yet — keep playing!</span>'}
+            </div>
+            ${unearned.length?`<div style="font-size:.72em;color:#aaa;font-weight:700;margin-top:4px">🔒 Locked: ${unearned.map(a=>`${a.emoji} ${a.desc}`).join(' · ')}</div>`:''}
+        </div>
+
+        <!-- Habitat zones collected -->
+        <div style="background:#f8f9fa;border-radius:14px;padding:12px 14px">
+            <div style="font-weight:900;font-size:.88em;color:#555;margin-bottom:8px">🌍 Habitat Zones</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+                ${Object.entries(ZONES).map(([zid,z])=>{
+                    const has=ANIMALS.filter(a=>a.zone===zid).some(a=>(S.animals[a.id]||0)>0);
+                    return `<div style="background:${has?z.bg:'#f5f5f5'};border:2px solid ${has?z.border:'#ddd'};border-radius:10px;padding:5px 10px;font-size:.8em;font-weight:700;color:${has?z.color:'#aaa'};opacity:${has?1:.6}">${z.label}${has?' ✓':' 🔒'}</div>`;
+                }).join('')}
+            </div>
+        </div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────
+//  BUILDINGS (Visit tab)
+// ─────────────────────────────────────────────────
+function buildingsSectionHtml(){
+    const cards=BUILDINGS.map(b=>{
+        const owned=(S.buildings[b.id]||0)>0;
+        const can=S.money>=b.cost;
+        const cls=owned?'owned':can?'':'cant-afford';
+        const pr=owned?`✅ Built`:`💰 $${b.cost}`;
+        return `<div class="bldg-card ${cls}" title="${b.desc} · +${b.bonus} visitors/cycle"
+                     onclick="buyBuilding('${b.id}')">
+            <div class="b-em">${b.emoji}</div>
+            <div class="b-nm">${b.name}</div>
+            <div class="b-pr">${pr}</div>
+        </div>`;
+    }).join('');
+    return `<div class="zv-bldg-wrap">
+        <div class="zv-bldg-title">🏗️ Zoo Buildings — tap to buy!</div>
+        <div class="zv-bldg-scroll">${cards}</div>
+    </div>`;
+}
+
+function buyBuilding(id){
+    const b=BUILDINGS.find(x=>x.id===id);
+    if(!b) return;
+    if(S.buildings[b.id]) { showToast(`${b.emoji} ${b.name} is already built!`); return; }
+    if(S.money<b.cost){ showToast(`💸 Need $${b.cost-S.money} more to build!`); return; }
+    S.money-=b.cost; S.buildings[b.id]=1;
+    beep('buy');
+    showToast(`🎉 ${b.emoji} ${b.name} is now open! +${b.bonus} visitors/cycle!`);
+    checkAchievements(); updateUI(); saveGame();
+    // Re-render the buildings strip in-place without full zoo view rebuild
+    const wrap=document.querySelector('.zv-bldg-wrap');
+    if(wrap) wrap.outerHTML=buildingsSectionHtml();
+}
+
+// ─────────────────────────────────────────────────
+//  ZOO VIEW — Animated Scene
+// ─────────────────────────────────────────────────
+let _zvActive=false, _zvRunning=false, _zvLastTs=0;
+const _animalWalkers=[], _guestWalkers=[];
+
+const ZV_DECORS={
+    // tropical
+    flamingo:['🌴','💧'],       monkey:['🌴','🍌'],         macaw:['🌺','🌴'],
+    peacock:['🌿','🌴'],        iguana:['🌿','🌴'],          dart_frog:['🍃','💧'],
+    bearded_dragon:['🪨','🌵'], king_cobra:['🌿','🌴'],     saltwater_croc:['💧','🪨'],
+    koala:['🌿','🌳'],
+    // savanna
+    zebra:['🌾','🪨'],          lion:['🌾','🌵'],            giraffe:['🌳','🌳'],
+    rhino:['🪨','🌾'],          elephant:['🌳','🪨'],        cheetah:['🌾','🌵'],
+    buffalo:['🌾','🪨'],        warthog:['🪨','🌾'],         meerkat:['🌵','🪨'],
+    bald_eagle:['🌾','🌿'],     condor:['🪨','🌿'],          red_hawk:['🌾','🌿'],
+    wild_dog:['🌾','🌳'],       camel:['🌵','🪨'],           kangaroo:['🌾','🌿'],
+    llama:['🌿','🪨'],
+    // arctic
+    penguin:['🧊','🪨'],        emperor_penguin:['🧊','❄️'], polar_bear:['🧊','🪨'],
+    arctic_fox:['❄️','🧊'],     snowy_owl:['❄️','🪨'],       walrus:['🧊','💧'],
+    arctic_hare:['❄️','🧊'],    reindeer:['❄️','🌿'],        snow_leopard:['🪨','❄️'],
+    // rainforest
+    panda:['🎋','🌿'],          tiger:['🌿','🌳'],           orangutan:['🌳','🍃'],
+    gorilla:['🌳','🍃'],        sumatran_tiger:['🌿','🌳'],  white_tiger:['🌿','🌳'],
+    sloth:['🌳','🍃'],          jaguar:['🌿','🌳'],          harpy_eagle:['🌳','🌿'],
+    mandrill:['🍃','🌳'],       tree_frog:['🌿','💧'],       philippine_eagle:['🌳','🌿'],
+    water_dragon:['🌿','💧'],   anaconda:['🌿','🌳'],        komodo:['🌿','🪨'],
+    // river
+    hippo:['💧','🪨'],          nile_croc:['💧','🪨'],       river_otter:['💧','🌿'],
+    capybara:['🌿','💧'],       manatee:['💧','🌿'],         nile_monitor:['💧','🪨'],
+    river_dolphin:['💧','🌿'],  axolotl:['💧','🌿'],         gharial:['💧','🪨'],
+    swan:['💧','🌿'],
+    // mountain
+    mountain_goat:['🪨','⛰️'],  grizzly:['🌲','🪨'],         gray_wolf:['🌲','🪨'],
+    puma:['🪨','🌲'],           bighorn:['🪨','⛰️'],          marmot:['🪨','🌿'],
+    yak:['🌿','🪨'],            red_panda:['🍂','🌲'],       golden_eagle_m:['🪨','⛰️'],
+    snow_monkey:['❄️','🌲'],
+    // aquarium
+    great_white:['🪸','🌊'],    octopus:['🪸','🌊'],         clownfish:['🪸','🌊'],
+    sea_turtle:['🪸','🌊'],     orca:['🌊','💧'],             pufferfish:['🪸','💧'],
+    lobster:['🪸','🪨'],        spider_crab:['🪸','🪨'],     dolphin:['🌊','💧'],
+    hammerhead:['🌊','🪸'],     sea_lion:['🪨','💧'],        moray_eel:['🪸','🪨'],
+    // oceania
+    wombat:['🪨','🌿'],          platypus:['💧','🌿'],        emu:['🌾','🌵'],
+    cassowary:['🌿','🌳'],       tasmanian_devil:['🌿','🪨'], quokka:['🌿','🌾'],
+    dingo:['🌵','🪨'],           kookaburra:['🌳','🌿'],
+};
+const ZV_GUESTS=['👦','👧','👨','👩','👴','👵'];
+
+function renderZooView(){
+    _zvActive=false;
+    _animalWalkers.length=0;
+    _guestWalkers.length=0;
+    const wrap=document.getElementById('tab-zooview');
+    const ownedIds=Object.keys(S.animals).filter(id=>S.animals[id]>0);
+
+    if(!ownedIds.length){
+        wrap.innerHTML=`<div class="zv-empty">
+            <div style="font-size:3.5em">🌱</div>
+            <p>Your zoo is empty!<br>Answer questions to earn money,<br>then buy animals from the <strong>🛒 Shop</strong>!</p>
+        </div>`;
+        return;
+    }
+
+    // Helper: build one enclosure card
+    function makeEnclosure(id){
+        const a=ANIMALS.find(x=>x.id===id), cnt=S.animals[id];
+        const [d1,d2]=ZV_DECORS[id]||['🌿','🪨'];
+        const num=Math.min(cnt,3);
+        let walkers='';
+        for(let i=0;i<num;i++){
+            const delay=(i*0.18).toFixed(2), dur=(0.42+i*0.07).toFixed(2);
+            walkers+=`<div class="zoo-animal-walker" data-zid="${id}">
+                <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${spr(a.u,a.emoji,44)}</div>
+            </div>`;
+        }
+        return `<div class="enclosure" id="enc-${id}">
+            <div class="enc-label">${a.emoji} ${a.name}${cnt>1?` ×${cnt}`:''}</div>
+            <em class="enc-decor" style="left:3px;bottom:22px;font-size:.95em">${d1}</em>
+            <em class="enc-decor" style="right:4px;bottom:22px;font-size:.95em">${d2}</em>
+            <div class="enc-ground"></div>${walkers}
+        </div>`;
+    }
+
+    // Group animals by zone
+    const byZone={};
+    ownedIds.forEach(id=>{ const a=ANIMALS.find(x=>x.id===id); (byZone[a.zone]=byZone[a.zone]||[]).push(id); });
+    const zoneOrder=['savanna','tropical','arctic','rainforest','river','mountain','aquarium','oceania'];
+    const zonesHtml=zoneOrder.filter(z=>byZone[z]).map(zid=>{
+        const z=ZONES[zid];
+        return `<div class="zv-zone" style="background:${z.bg}">
+            <div class="zv-zone-label" style="color:${z.color};background:${z.bg};border:2px solid ${z.border}">${z.label}</div>
+            <div class="enc-grid">${byZone[zid].map(makeEnclosure).join('')}</div>
+        </div>`;
+    }).join('');
+
+    const total=Object.values(S.animals).reduce((s,c)=>s+c,0);
+    const phases=[
+        { sky:'linear-gradient(180deg,#42a5f5,#81d4fa)', icon:'☀️', extras:'<span>☁️</span> <span style="opacity:.65">☁️</span>', tc:'#0d47a1' },
+        { sky:'linear-gradient(180deg,#29b6f6,#aed581)', icon:'🌤️', extras:'<span>☁️</span>',                                       tc:'#1b5e20' },
+        { sky:'linear-gradient(180deg,#ff7043,#ffb74d)', icon:'🌅', extras:'<span style="opacity:.7">☁️</span>',                    tc:'#bf360c' },
+        { sky:'linear-gradient(180deg,#1a237e,#283593)', icon:'🌙', extras:'<span>⭐</span><span style="opacity:.6">✨</span>',      tc:'#e8eaf6' },
+    ];
+    const ph=phases[S.dayPhase]||phases[0];
+    wrap.innerHTML=`<div class="zoo-view-scroll"><div class="zoo-view-wrap">
+        <div class="zv-sky" style="background:${ph.sky}">${ph.icon} ${ph.extras}
+            <span style="margin-left:auto;font-size:.62em;font-weight:700;color:${ph.tc}">🐾 ${total} animal${total!==1?'s':''}</span>
+        </div>
+        <div class="zv-mid">${zonesHtml}</div>
+        ${buildingsSectionHtml()}
+        <div class="zv-path-wrap">
+            <div class="zv-path" id="zvGuestPath"><div class="path-lane"></div></div>
+        </div>
+    </div></div>`;
+
+    setTimeout(()=>{
+        _setupAnimalWalkers();
+        _setupGuestWalkers();
+        _startZvAnim();
+    }, 60);
+}
+
+function _setupAnimalWalkers(){
+    document.querySelectorAll('.zoo-animal-walker').forEach((el,i)=>{
+        const enc=el.closest('.enclosure');
+        if(!enc) return;
+        const maxX=Math.max(8, enc.offsetWidth-56);
+        const startX=(i%3)/2*maxX;
+        const spd=(Math.random()*0.45+0.22)*(i%2===0?1:-1);
+        el.style.left=startX+'px';
+        el.style.transform=`scaleX(${spd>=0?1:-1})`;
+        _animalWalkers.push({el, x:startX, spd, minX:4, maxX});
+    });
+}
+
+function _setupGuestWalkers(){
+    const path=document.getElementById('zvGuestPath');
+    if(!path) return;
+    const pw=path.offsetWidth;
+    ZV_GUESTS.forEach((g,i)=>{
+        const el=document.createElement('span');
+        el.className='zoo-guest g-bob';
+        el.textContent=g;
+        el.style.animationDelay=(i*0.07)+'s';
+        el.style.animationDuration=(0.34+i*0.04)+'s';
+        const startX=(i/ZV_GUESTS.length)*pw;
+        const spd=(Math.random()*0.32+0.15)*(i%2===0?1:-1);
+        el.style.left=startX+'px';
+        el.style.transform=`scaleX(${spd>=0?1:-1})`;
+        path.appendChild(el);
+        _guestWalkers.push({el, x:startX, spd});
+    });
+}
+
+function _startZvAnim(){
+    _zvActive=true;
+    if(!_zvRunning){ _zvRunning=true; requestAnimationFrame(_zvLoop); }
+}
+
+function _zvLoop(ts){
+    if(!_zvActive){ _zvRunning=false; _zvLastTs=0; return; }
+    const dt=_zvLastTs?Math.min(ts-_zvLastTs,80):16;
+    _zvLastTs=ts;
+    const sc=dt/16;
+
+    _animalWalkers.forEach(w=>{
+        w.x+=w.spd*sc;
+        if(w.x>=w.maxX){ w.x=w.maxX; w.spd=-Math.abs(w.spd); }
+        if(w.x<=w.minX){ w.x=w.minX; w.spd= Math.abs(w.spd); }
+        w.el.style.left=w.x+'px';
+        w.el.style.transform=`scaleX(${w.spd>=0?1:-1})`;
+    });
+
+    const path=document.getElementById('zvGuestPath');
+    const pw=path?path.offsetWidth:320;
+    _guestWalkers.forEach(w=>{
+        w.x+=w.spd*sc;
+        if(w.x>pw+60) w.x=-60;
+        if(w.x<-60)   w.x=pw+60;
+        w.el.style.left=w.x+'px';
+        w.el.style.transform=`scaleX(${w.spd>=0?1:-1})`;
+    });
+
+    requestAnimationFrame(_zvLoop);
+}
+
+// ─────────────────────────────────────────────────
+//  AVATAR CUSTOMIZATION
+// ─────────────────────────────────────────────────
+const AV_SKINS = [
+    { color:'#FDBCB4', label:'Fair' },
+    { color:'#F0C09A', label:'Light' },
+    { color:'#C68642', label:'Medium' },
+    { color:'#8D5524', label:'Tan' },
+    { color:'#4A312C', label:'Deep' },
+];
+const AV_HAIR_COLORS = ['#1a0f00','#5C3317','#A0522D','#D4A500','#800000','#808080','#ffffff','#FF4500'];
+const AV_SHIRT_COLORS = ['#4caf50','#2196f3','#f44336','#ff9800','#9c27b0','#00bcd4','#e91e63','#607d8b'];
+const AV_HATS = [
+    { id:'none',   emoji:'',   label:'No Hat' },
+    { id:'cap',    emoji:'🧢', label:'Cap' },
+    { id:'safari', emoji:'🤠', label:'Safari' },
+    { id:'hard',   emoji:'⛑️', label:'Safety' },
+    { id:'top',    emoji:'🎩', label:'Top Hat' },
+    { id:'party',  emoji:'🎉', label:'Party!' },
+];
+const AV_EYES = [
+    { id:'happy', label:'😊 Happy' },
+    { id:'cool',  label:'😎 Cool' },
+    { id:'wink',  label:'😉 Wink' },
+    { id:'star',  label:'🤩 Star' },
+];
+const AV_HAIR_STYLES = [
+    { id:'none',  label:'Bald' },
+    { id:'short', label:'Short' },
+    { id:'long',  label:'Long' },
+    { id:'curly', label:'Curly' },
+    { id:'bun',   label:'Bun' },
+];
+const AV_ACCESSORIES = [
+    { id:'none',    emoji:'',    label:'None' },
+    { id:'glasses', emoji:'👓', label:'Glasses' },
+    { id:'bow',     emoji:'🎀', label:'Bow Tie' },
+    { id:'medal',   emoji:'🏅', label:'Medal' },
+    { id:'badge',   emoji:'🎫', label:'VIP Badge' },
+];
+
+function renderAvatar(av, sz) {
+    sz = sz || 60;
+    av = Object.assign({ name:'Zookeeper', skin:'#FDBCB4', hairStyle:'short', hairColor:'#1a0f00',
+        shirtColor:'#4caf50', hat:'none', eyes:'happy', accessory:'none' }, av || {});
+    const hat = AV_HATS.find(h=>h.id===av.hat) || AV_HATS[0];
+    const showHair = av.hairStyle !== 'none' && av.hat === 'none';
+    const s = sz;
+    const rr = n => Math.round(n);
+    let hairHtml = '';
+    if(showHair){
+        const hc = av.hairColor || '#1a0f00';
+        if(av.hairStyle==='short'){
+            hairHtml = `<div style="position:absolute;top:0;left:${rr(s*.1)}px;right:${rr(s*.1)}px;height:${rr(s*.44)}px;background:${hc};border-radius:${rr(s*.5)}px ${rr(s*.5)}px 0 0;z-index:3"></div>`;
+        } else if(av.hairStyle==='long'){
+            hairHtml = `
+                <div style="position:absolute;top:0;left:${rr(s*.1)}px;right:${rr(s*.1)}px;height:${rr(s*.44)}px;background:${hc};border-radius:${rr(s*.5)}px ${rr(s*.5)}px 0 0;z-index:3"></div>
+                <div style="position:absolute;top:${rr(s*.1)}px;left:-${rr(s*.1)}px;width:${rr(s*.14)}px;height:${rr(s*.6)}px;background:${hc};border-radius:${rr(s*.08)}px;z-index:1"></div>
+                <div style="position:absolute;top:${rr(s*.1)}px;right:-${rr(s*.1)}px;width:${rr(s*.14)}px;height:${rr(s*.6)}px;background:${hc};border-radius:${rr(s*.08)}px;z-index:1"></div>`;
+        } else if(av.hairStyle==='curly'){
+            hairHtml = `<div style="position:absolute;top:-${rr(s*.04)}px;left:0;right:0;display:flex;justify-content:space-evenly;z-index:3;padding:0 ${rr(s*.02)}px">
+                ${[0,1,2,3].map(i=>`<div style="width:${rr(s*.23)}px;height:${rr(s*.23)}px;background:${hc};border-radius:50%;margin-top:${i%2===0?0:rr(s*.06)}px"></div>`).join('')}
+            </div>`;
+        } else if(av.hairStyle==='bun'){
+            hairHtml = `
+                <div style="position:absolute;top:0;left:${rr(s*.12)}px;right:${rr(s*.12)}px;height:${rr(s*.3)}px;background:${hc};border-radius:${rr(s*.5)}px ${rr(s*.5)}px 0 0;z-index:3"></div>
+                <div style="position:absolute;top:-${rr(s*.26)}px;left:50%;transform:translateX(-50%);width:${rr(s*.32)}px;height:${rr(s*.32)}px;background:${hc};border-radius:50%;z-index:3"></div>`;
+        }
+    }
+    const eyeY = rr(s*.32), eyeSz = Math.max(3, rr(s*.12));
+    let eyesHtml = '';
+    if(av.eyes==='cool'){
+        eyesHtml = `<div style="position:absolute;top:${eyeY-rr(s*.04)}px;left:0;right:0;text-align:center;font-size:${rr(s*.3)}px;line-height:1">😎</div>`;
+    } else if(av.eyes==='star'){
+        eyesHtml = `<div style="position:absolute;top:${eyeY}px;left:0;right:0;display:flex;justify-content:space-around;padding:0 ${rr(s*.15)}px">
+            <span style="font-size:${rr(s*.22)}px;line-height:1">⭐</span><span style="font-size:${rr(s*.22)}px;line-height:1">⭐</span>
+        </div>`;
+    } else if(av.eyes==='wink'){
+        eyesHtml = `<div style="position:absolute;top:${eyeY}px;left:0;right:0;display:flex;justify-content:space-around;padding:0 ${rr(s*.15)}px;align-items:center">
+            <div style="width:${eyeSz}px;height:${eyeSz}px;background:#222;border-radius:50%"></div>
+            <div style="width:${eyeSz}px;height:${Math.max(2,rr(eyeSz*.3))}px;background:#222;border-radius:2px;margin-top:${rr(eyeSz*.4)}px"></div>
+        </div>`;
+    } else {
+        eyesHtml = `<div style="position:absolute;top:${eyeY}px;left:0;right:0;display:flex;justify-content:space-around;padding:0 ${rr(s*.15)}px">
+            <div style="width:${eyeSz}px;height:${eyeSz}px;background:#222;border-radius:50%"></div>
+            <div style="width:${eyeSz}px;height:${eyeSz}px;background:#222;border-radius:50%"></div>
+        </div>`;
+    }
+    const mW = rr(s*.3), mB = rr(s*.14);
+    const mouthHtml = `<div style="position:absolute;bottom:${mB}px;left:50%;transform:translateX(-50%);width:${mW}px;height:${rr(mW*.5)}px;border-bottom:${Math.max(2,rr(s*.04))}px solid #c0392b;border-radius:0 0 ${mW}px ${mW}px"></div>`;
+    const chSz = rr(s*.15), chY = rr(s*.42);
+    const cheekHtml = `
+        <div style="position:absolute;top:${chY}px;left:${rr(s*.08)}px;width:${chSz}px;height:${rr(chSz*.6)}px;background:rgba(255,130,130,.38);border-radius:50%"></div>
+        <div style="position:absolute;top:${chY}px;right:${rr(s*.08)}px;width:${chSz}px;height:${rr(chSz*.6)}px;background:rgba(255,130,130,.38);border-radius:50%"></div>`;
+    const accEmojis = { none:'🎟️', glasses:'👓', bow:'🎀', medal:'🏅', badge:'🎫' };
+    const accE = accEmojis[av.accessory] || '🎟️';
+    const bodyW = rr(s*.78), bodyH = rr(s*.55);
+    return `<div style="display:inline-flex;flex-direction:column;align-items:center;user-select:none">
+        ${hat.emoji ? `<div style="font-size:${rr(s*.55)}px;line-height:1;margin-bottom:-${rr(s*.08)}px;position:relative;z-index:10;display:block;text-align:center">${hat.emoji}</div>` : ''}
+        <div style="width:${s}px;height:${s}px;border-radius:50%;background:${av.skin};position:relative;border:${Math.max(1,rr(s*.03))}px solid rgba(0,0,0,.12);overflow:visible;z-index:5;flex-shrink:0">
+            ${hairHtml}${eyesHtml}${cheekHtml}${mouthHtml}
+        </div>
+        <div style="width:${bodyW}px;height:${bodyH}px;background:${av.shirtColor};border-radius:${rr(s*.1)}px ${rr(s*.1)}px 0 0;display:flex;align-items:center;justify-content:center;border-top:${Math.max(1,rr(s*.03))}px solid rgba(0,0,0,.12);margin-top:1px;position:relative;z-index:4">
+            <span style="font-size:${rr(s*.24)}px;line-height:1">${accE}</span>
+        </div>
+        ${av.name && sz >= 45 ? `<div style="font-size:${Math.max(9,rr(s*.15))}px;font-weight:900;color:#444;margin-top:3px;max-width:${s+22}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Nunito,cursive">${av.name.slice(0,14)}</div>` : ''}
+    </div>`;
+}
+
+let _avDraft = {};
+function openAvatarEditor(){
+    _avDraft = Object.assign({ name:'Zookeeper', skin:'#FDBCB4', hairStyle:'short', hairColor:'#1a0f00',
+        shirtColor:'#4caf50', hat:'none', eyes:'happy', accessory:'none' }, S.avatar || {});
+    document.getElementById('avModalInner').innerHTML = _buildAvEditorHTML();
+    document.getElementById('avModal').classList.add('show');
+}
+function closeAvatarEditor(){
+    document.getElementById('avModal').classList.remove('show');
+}
+function _buildAvEditorHTML(){
+    return `
+        <div class="av-modal-hdr">
+            <span>🎨 Customize Your Zookeeper!</span>
+            <button class="av-close-btn" onclick="closeAvatarEditor()">✕</button>
+        </div>
+        <div class="av-preview-wrap"><div id="avEdPrev">${renderAvatar(_avDraft, 82)}</div></div>
+        <div class="av-field">
+            <div class="av-field-lbl">📛 Zookeeper Name</div>
+            <input class="av-name-inp" id="avNameInp" maxlength="14" value="${(_avDraft.name||'Zookeeper').replace(/"/g,'&quot;')}"
+                   oninput="_avDraft.name=this.value;_refreshAvPrev()">
+        </div>
+        ${_avSwRow('🎨 Skin Tone','skin',AV_SKINS.map(s=>({val:s.color,color:s.color,label:s.label})))}
+        ${_avChRow('💇 Hair Style','hairStyle',AV_HAIR_STYLES.map(h=>({val:h.id,label:h.label})))}
+        ${_avSwRow('🎨 Hair Color','hairColor',AV_HAIR_COLORS.map(c=>({val:c,color:c,label:''})))}
+        ${_avSwRow('👕 Shirt Color','shirtColor',AV_SHIRT_COLORS.map(c=>({val:c,color:c,label:''})))}
+        ${_avChRow('🎩 Hat','hat',AV_HATS.map(h=>({val:h.id,label:(h.emoji?h.emoji+' ':'')+h.label})))}
+        ${_avChRow('👁️ Eyes','eyes',AV_EYES.map(e=>({val:e.id,label:e.label})))}
+        ${_avChRow('✨ Accessory','accessory',AV_ACCESSORIES.map(a=>({val:a.id,label:(a.emoji?a.emoji+' ':'')+a.label})))}
+        <button class="av-save-btn" onclick="_saveAvatar()">💾 Save Zookeeper!</button>`;
+}
+function _avSwRow(label, prop, opts){
+    const cur = _avDraft[prop];
+    return `<div class="av-field"><div class="av-field-lbl">${label}</div><div class="av-swatches">
+        ${opts.map(o=>`<div class="av-swatch${cur===o.val?' av-sel':''}" style="background:${o.color}${o.color==='#ffffff'?';border-color:#ccc':''}" title="${o.label}" data-avprop="${prop}" data-avval="${o.val}" onclick="setAv('${prop}','${o.val}')"></div>`).join('')}
+    </div></div>`;
+}
+function _avChRow(label, prop, opts){
+    const cur = _avDraft[prop];
+    return `<div class="av-field"><div class="av-field-lbl">${label}</div><div class="av-chips">
+        ${opts.map(o=>`<button class="av-chip${cur===o.val?' av-sel':''}" data-avprop="${prop}" data-avval="${o.val}" onclick="setAv('${prop}','${o.val}')">${o.label}</button>`).join('')}
+    </div></div>`;
+}
+function setAv(prop, val){
+    _avDraft[prop] = val;
+    document.querySelectorAll(`[data-avprop="${prop}"]`).forEach(el=>{
+        el.classList.toggle('av-sel', el.dataset.avval === val);
+    });
+    _refreshAvPrev();
+}
+function _refreshAvPrev(){
+    const p = document.getElementById('avEdPrev');
+    if(p) p.innerHTML = renderAvatar(_avDraft, 82);
+}
+function _saveAvatar(){
+    const inp = document.getElementById('avNameInp');
+    if(inp) _avDraft.name = inp.value || 'Zookeeper';
+    S.avatar = Object.assign({}, _avDraft);
+    saveGame();
+    _updateHdrAvatar();
+    closeAvatarEditor();
+    showToast('🎉 Looking great, ' + S.avatar.name + '!');
+}
+function _updateHdrAvatar(){
+    const av = S.avatar || {};
+    const icon = document.getElementById('hdrAvIcon');
+    const nm   = document.getElementById('hdrAvNm');
+    if(icon) icon.innerHTML = renderAvatar(av, 30);
+    if(nm)   nm.textContent = (av.name || 'Zookeeper').slice(0, 10);
+}
+
+// ─────────────────────────────────────────────────
+//  SAVE / LOAD
+// ─────────────────────────────────────────────────
+const SAVE_KEY='zooMath_v1';
+function saveGame(){
+    try{
+        const data={
+            money:S.money, score:S.score, streak:S.streak, level:S.level,
+            animals:S.animals, upgrades:S.upgrades, qCount:S.qCount,
+            recentWrong:S.recentWrong, practiceType:S.practiceType,
+            practiceLeft:S.practiceLeft, correctCount:S.correctCount,
+            activeOps:S.activeOps, nextChallenge:S.nextChallenge, diffSlot:S.diffSlot,
+            badges:S.badges, emergencyWins:S.emergencyWins,
+            bestStreak:S.bestStreak, totalEarned:S.totalEarned,
+            dayPhase:S.dayPhase, nextEvent:S.nextEvent,
+            buildings:S.buildings, food:S.food,
+            zoneUpgrades:S.zoneUpgrades, crossUpgrades:S.crossUpgrades,
+            avatar:S.avatar, matchBest:S.matchBest,
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }catch(e){}
+}
+function loadGame(){
+    try{
+        const raw=localStorage.getItem(SAVE_KEY);
+        if(!raw) return false;
+        const data=JSON.parse(raw);
+        Object.assign(S, data);
+        return true;
+    }catch(e){ return false; }
+}
+function resetGame(){
+    if(!confirm('Start over? This will erase your zoo and ALL progress!')) return;
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+}
+
+// ─────────────────────────────────────────────────
+//  FOOD MATCH GAME
+// ─────────────────────────────────────────────────
+const MATCH_QUESTIONS = [
+    // ── Biome matching (food → zone) — 5 per zone × 8 zones = 40 ──
+    // TROPICAL
+    { food:'🍌', name:'Tropical Fruit Mix',       hint:'Sweet fruits from hot, humid climates',                 type:'zone', correct:'tropical',   opts:['tropical','savanna','arctic','mountain']    },
+    { food:'🦟', name:'Live Insects Tray',         hint:'Tiny critters loved by tropical reptiles',              type:'zone', correct:'tropical',   opts:['tropical','rainforest','river','oceania']   },
+    { food:'🍍', name:'Pineapple Chunks',          hint:'Tangy tropical fruit loved by colourful birds',         type:'zone', correct:'tropical',   opts:['tropical','rainforest','savanna','oceania']  },
+    { food:'🥭', name:'Mango Slices',              hint:'Juicy stone fruit from warm, sunny groves',             type:'zone', correct:'tropical',   opts:['tropical','rainforest','river','oceania']   },
+    { food:'🥥', name:'Coconut Flesh Bits',        hint:'Rich tropical palm nut loved by primates',              type:'zone', correct:'tropical',   opts:['tropical','oceania','savanna','rainforest']  },
+    // SAVANNA
+    { food:'🌾', name:'Savanna Hay Bundle',        hint:'Premium grass for the open-plains grazers',             type:'zone', correct:'savanna',    opts:['savanna','mountain','arctic','tropical']    },
+    { food:'🌵', name:'Acacia Leaf Bundle',        hint:"From Africa's most iconic thorny tree",                 type:'zone', correct:'savanna',    opts:['savanna','tropical','rainforest','river']   },
+    { food:'🌻', name:'Dried Grass Seed Cake',     hint:'Sun-baked seed blocks for dry-land grazers',            type:'zone', correct:'savanna',    opts:['savanna','mountain','arctic','tropical']    },
+    { food:'🍊', name:'Baobab Fruit Pod',          hint:'Tangy superfruit from the iconic upside-down tree',     type:'zone', correct:'savanna',    opts:['savanna','tropical','rainforest','oceania']  },
+    { food:'🫘', name:'Dried Savanna Pods',        hint:'Wild legume pods from the open African bush',           type:'zone', correct:'savanna',    opts:['savanna','rainforest','tropical','mountain'] },
+    // ARCTIC
+    { food:'🐟', name:'Arctic Fish Supply',        hint:'Fresh catch from icy polar waters',                     type:'zone', correct:'arctic',     opts:['arctic','aquarium','river','oceania']       },
+    { food:'🫧', name:'Polar Krill Pack',          hint:'Tiny crustaceans from the frozen sea',                  type:'zone', correct:'arctic',     opts:['arctic','aquarium','river','tropical']      },
+    { food:'🐡', name:'Capelin Fish Fillet',       hint:'Small oily fish from cold polar seas',                  type:'zone', correct:'arctic',     opts:['arctic','aquarium','river','mountain']      },
+    { food:'🦀', name:'Cold-Water Shore Crab',     hint:'Crabs from rocky Arctic shorelines',                    type:'zone', correct:'arctic',     opts:['arctic','aquarium','oceania','river']       },
+    { food:'🫙', name:'Blubber & Fat Reserve',     hint:'High-energy fat supplement for polar mammals',          type:'zone', correct:'arctic',     opts:['arctic','mountain','savanna','aquarium']    },
+    // RAINFOREST
+    { food:'🍇', name:'Jungle Fig Mix',            hint:'Sweet figs falling from the forest canopy',             type:'zone', correct:'rainforest', opts:['rainforest','tropical','river','mountain']  },
+    { food:'🪵', name:'Termite Log',               hint:'Protein-rich snack from the forest floor',              type:'zone', correct:'rainforest', opts:['rainforest','savanna','mountain','oceania']  },
+    { food:'🌸', name:'Flower Nectar Supplement',  hint:'Sugary nectar from dense jungle blooms',                type:'zone', correct:'rainforest', opts:['rainforest','tropical','oceania','savanna']  },
+    { food:'🐛', name:'Jungle Caterpillar Tray',   hint:'Plump caterpillars from the rainforest canopy',         type:'zone', correct:'rainforest', opts:['rainforest','tropical','mountain','savanna'] },
+    { food:'🎋', name:'Young Bamboo Shoots',       hint:'Tender shoots from tropical bamboo groves',             type:'zone', correct:'rainforest', opts:['rainforest','mountain','tropical','river']  },
+    // RIVER
+    { food:'🪴', name:'River Plant Mix',           hint:'Aquatic greens from slow-moving rivers',                type:'zone', correct:'river',      opts:['river','aquarium','tropical','rainforest']  },
+    { food:'🍤', name:'Freshwater Shrimp',         hint:'Tiny swimmers from clean river systems',                type:'zone', correct:'river',      opts:['river','aquarium','arctic','oceania']       },
+    { food:'🐚', name:'River Snail Soup',          hint:'Freshwater snails from muddy river banks',              type:'zone', correct:'river',      opts:['river','aquarium','tropical','arctic']      },
+    { food:'🌊', name:'River Algae Wafer',         hint:'Compressed algae from freshwater streams',              type:'zone', correct:'river',      opts:['river','aquarium','rainforest','arctic']    },
+    { food:'🪻', name:'Aquatic Root Bundle',       hint:'Submerged roots and water grasses from riverbanks',     type:'zone', correct:'river',      opts:['river','tropical','rainforest','aquarium']  },
+    // MOUNTAIN
+    { food:'🍃', name:'Mountain Meadow Mix',       hint:'Alpine herbs & seeds from high pastures',               type:'zone', correct:'mountain',   opts:['mountain','arctic','savanna','rainforest']  },
+    { food:'🫐', name:'Pine Nuts & Berries',       hint:'Energy-rich treats from conifer trees',                 type:'zone', correct:'mountain',   opts:['mountain','rainforest','tropical','river']  },
+    { food:'🍄', name:'Alpine Mushroom Mix',       hint:'Earthy fungi from cool mountain forests',               type:'zone', correct:'mountain',   opts:['mountain','rainforest','arctic','river']    },
+    { food:'🍂', name:'Wild Mountain Chestnut',    hint:'Rich nuts from high-altitude broadleaf trees',          type:'zone', correct:'mountain',   opts:['mountain','rainforest','tropical','savanna'] },
+    { food:'🧂', name:'Mineral Salt Lick',         hint:'Essential mineral salts for mountain-dwelling animals', type:'zone', correct:'mountain',   opts:['mountain','arctic','savanna','river']       },
+    // AQUARIUM
+    { food:'🦐', name:'Ocean Seafood Pack',        hint:'Mixed marine life for deep-water animals',              type:'zone', correct:'aquarium',   opts:['aquarium','river','arctic','oceania']       },
+    { food:'🪸', name:'Coral & Kelp Wrap',         hint:'Reef vegetation and ocean plants',                      type:'zone', correct:'aquarium',   opts:['aquarium','river','tropical','oceania']     },
+    { food:'🦑', name:'Deep-Sea Squid',            hint:'Cephalopods hauled from ocean depths',                  type:'zone', correct:'aquarium',   opts:['aquarium','arctic','river','oceania']       },
+    { food:'🐠', name:'Reef Plankton Broth',       hint:'Microscopic organisms from living coral reefs',         type:'zone', correct:'aquarium',   opts:['aquarium','tropical','river','arctic']      },
+    { food:'🌀', name:'Seaweed & Krill Gel',       hint:'Blended ocean vegetation and tiny crustaceans',         type:'zone', correct:'aquarium',   opts:['aquarium','arctic','oceania','river']       },
+    // OCEANIA
+    { food:'🌿', name:'Outback Forage Mix',        hint:'Native Australian grasses and insects',                 type:'zone', correct:'oceania',    opts:['oceania','tropical','savanna','rainforest'] },
+    { food:'🍀', name:'Eucalyptus Leaves',         hint:"The koala's absolute favourite snack!",                 type:'zone', correct:'oceania',    opts:['oceania','rainforest','tropical','river']   },
+    { food:'🪱', name:'Witchetty Grubs',           hint:'Traditional Australian bush tucker loved by marsupials',type:'zone', correct:'oceania',    opts:['oceania','tropical','rainforest','savanna'] },
+    { food:'🌵', name:'Spinifex Grass Bundle',     hint:'Hardy desert grass from the Australian outback',        type:'zone', correct:'oceania',    opts:['oceania','savanna','mountain','arctic']     },
+    { food:'🌼', name:'Banksia Flower Nectar',     hint:"Sweet nectar from Australia's iconic spiky flowers",    type:'zone', correct:'oceania',    opts:['oceania','tropical','rainforest','mountain'] },
+    // ── Size matching (food → animal size) — 4 per size × 5 sizes = 20 ──
+    // TINY
+    { food:'🌱', name:'Tiny Bites Mix',            hint:'Micro-portions for creatures under 1 kg',               type:'size', correct:'tiny',   opts:['tiny','small','medium','large']  },
+    { food:'🐜', name:'Micro Insect Pellets',      hint:'Perfect for dart frogs, geckos and tiny birds',        type:'size', correct:'tiny',   opts:['tiny','small','medium','large']  },
+    { food:'💧', name:'Vitamin Droplets',          hint:'Liquid nutrition for hummingbirds & pygmy creatures',   type:'size', correct:'tiny',   opts:['tiny','small','medium','large']  },
+    { food:'🫛', name:'Mini Leaf Crumbles',        hint:'Shredded leaves for the tiniest herbivores',            type:'size', correct:'tiny',   opts:['tiny','small','medium','large']  },
+    // SMALL
+    { food:'🥜', name:'Small Animal Blend',        hint:'Balanced portions for compact creatures',               type:'size', correct:'small',  opts:['small','tiny','medium','large']  },
+    { food:'🥕', name:'Carrot & Veggie Sticks',   hint:'Great for rabbits, meerkats and small mammals',         type:'size', correct:'small',  opts:['small','tiny','medium','large']  },
+    { food:'🍎', name:'Apple Quarter Slices',      hint:'Fruity treats for animals under 50 kg',                 type:'size', correct:'small',  opts:['small','tiny','medium','large']  },
+    { food:'🪲', name:'Mixed Bug Bundle',          hint:'Insects for small insectivores and lizards',            type:'size', correct:'small',  opts:['small','tiny','medium','large']  },
+    // MEDIUM
+    { food:'🥩', name:'Medium Mammal Ration',      hint:'Hearty daily meals for mid-sized animals',              type:'size', correct:'medium', opts:['medium','small','large','giant'] },
+    { food:'🌽', name:'Whole Corn Bundles',        hint:'Filling grains for animals weighing 50–300 kg',         type:'size', correct:'medium', opts:['medium','small','large','giant'] },
+    { food:'🥦', name:'Steamed Veggie Tray',       hint:'Nutritious vegetables for mid-sized mammals',           type:'size', correct:'medium', opts:['medium','small','large','giant'] },
+    { food:'🍠', name:'Sweet Potato Mash',         hint:'Warm carb-rich meal for medium-weight animals',         type:'size', correct:'medium', opts:['medium','small','large','giant'] },
+    // LARGE
+    { food:'🍖', name:'Large Animal Feast',        hint:'Big portions for your heaviest residents',               type:'size', correct:'large',  opts:['large','medium','giant','small'] },
+    { food:'🥬', name:'Full Cabbage Crate',        hint:'Several cabbages for large hungry animals',              type:'size', correct:'large',  opts:['large','medium','giant','small'] },
+    { food:'🐟', name:'Big Fish Barrel',           hint:'Tubs of fish for large aquatic mammals',                 type:'size', correct:'large',  opts:['large','medium','giant','small'] },
+    { food:'🍉', name:'Watermelon Halves',         hint:'Cooling fruit for animals between 300–2,000 kg',         type:'size', correct:'large',  opts:['large','medium','giant','small'] },
+    // GIANT
+    { food:'🧺', name:'Giant Feast Pack',          hint:"Enormous meals for the zoo's biggest animals",           type:'size', correct:'giant',  opts:['giant','large','medium','small'] },
+    { food:'🌾', name:'Truckload Hay Bale',        hint:"Whole bales for the zoo's largest residents",            type:'size', correct:'giant',  opts:['giant','large','medium','small'] },
+    { food:'🍈', name:'Whole Melon Crate',         hint:'Dozens of melons for giant appetites',                   type:'size', correct:'giant',  opts:['giant','large','medium','small'] },
+    { food:'🥦', name:'Crate of Mixed Veg',        hint:'Industrial quantities of veg for mega-sized animals',    type:'size', correct:'giant',  opts:['giant','large','medium','small'] },
+    // ── Animal matching (food → specific animal) — 10 questions ──
+    { food:'🎋', name:'Bamboo Shoots',             hint:'This animal eats almost nothing else — 12 kg a day!',   type:'animal', correct:'panda',          opts:['panda','gorilla','sloth','tiger']            },
+    { food:'🍃', name:'Eucalyptus Leaves',         hint:'This sleepy marsupial survives on these toxic leaves',   type:'animal', correct:'koala',          opts:['koala','wombat','kangaroo','quokka']         },
+    { food:'🐡', name:'Small Whole Fish',          hint:'This black-and-white bird swallows fish head-first',    type:'animal', correct:'emperor_penguin', opts:['emperor_penguin','polar_bear','walrus','arctic_fox'] },
+    { food:'🌿', name:'Riverside Grass & Roots',   hint:"Africa's semi-aquatic giant grazes only at night",      type:'animal', correct:'hippo',          opts:['hippo','manatee','capybara','river_otter']   },
+    { food:'🍌', name:'Tropical Fruits & Leaves',  hint:'This red-haired great ape from Borneo loves fruit',     type:'animal', correct:'orangutan',      opts:['orangutan','gorilla','mandrill','monkey']    },
+    { food:'🌾', name:'Savanna Grass — 200 kg!',   hint:"The world's largest land animal needs this much daily", type:'animal', correct:'elephant',       opts:['elephant','giraffe','rhino','buffalo']       },
+    { food:'🌿', name:'Treetop Leaves & Buds',     hint:"The world's tallest animal browses above the rest",     type:'animal', correct:'giraffe',        opts:['giraffe','elephant','rhino','zebra']         },
+    { food:'🐟', name:'Fish & Small Squid',        hint:'This playful ocean acrobat herds fish with its pod',    type:'animal', correct:'dolphin',        opts:['dolphin','orca','sea_lion','sea_turtle']     },
+    { food:'🥚', name:'Turtle Eggs & Jellyfish',   hint:'This ancient reptile returns to its birth beach to nest',type:'animal', correct:'sea_turtle',    opts:['sea_turtle','sea_lion','dolphin','octopus']  },
+    { food:'🌰', name:'Nuts, Berries & Roots',     hint:'This powerful mountain bear forages before hibernation',type:'animal', correct:'grizzly',        opts:['grizzly','gray_wolf','puma','red_panda']     },
+];
+
+const MQ_ZONE_LABELS = {
+    tropical:'🌴 Tropical', savanna:'🌾 Savanna', arctic:'🧊 Arctic',
+    rainforest:'🌧️ Rainforest', river:'💧 River', mountain:'⛰️ Mountain',
+    aquarium:'🐠 Aquarium', oceania:'🦘 Oceania'
+};
+const MQ_SIZE_LABELS = {
+    tiny:'🔬 Tiny (< 1 kg)', small:'🐿️ Small (1–50 kg)', medium:'🦊 Medium (50–300 kg)',
+    large:'🐘 Large (300–2k kg)', giant:'🐋 Giant (2k+ kg)'
+};
+const MQ_ANIMAL_LABELS = {
+    panda:'🐼 Giant Panda', koala:'🐨 Koala', emperor_penguin:'🐧 Emperor Penguin',
+    hippo:'🦛 Hippo', orangutan:'🦧 Orangutan', elephant:'🐘 African Elephant',
+    giraffe:'🦒 Giraffe', dolphin:'🐬 Bottlenose Dolphin', sea_turtle:'🐢 Sea Turtle',
+    grizzly:'🐻 Grizzly Bear', gorilla:'🦍 Gorilla', sloth:'🦥 Sloth', tiger:'🐯 Tiger',
+    wombat:'🦡 Wombat', kangaroo:'🦘 Kangaroo', quokka:'🐹 Quokka',
+    polar_bear:'🐻‍❄️ Polar Bear', walrus:'🦭 Walrus', arctic_fox:'🦊 Arctic Fox',
+    manatee:'🐳 Manatee', capybara:'🦦 Capybara', river_otter:'🦦 River Otter',
+    mandrill:'🐒 Mandrill', monkey:'🐒 Monkey', rhino:'🦏 Rhinoceros',
+    buffalo:'🐃 Buffalo', zebra:'🦓 Zebra', orca:'🐋 Orca', sea_lion:'🦭 Sea Lion',
+    octopus:'🐙 Octopus', red_panda:'🦝 Red Panda', gray_wolf:'🐺 Gray Wolf', puma:'🐆 Puma'
+};
+function mqLabel(type, key){
+    if(type==='zone')   return MQ_ZONE_LABELS[key]   || key;
+    if(type==='size')   return MQ_SIZE_LABELS[key]   || key;
+    return MQ_ANIMAL_LABELS[key] || key;
+}
+
+let MG  = null; // quick-quiz match state
+let MDG = null; // pairs-match state
+
+const DM_COLORS = [
+    ['#fce4ec','#f48fb1'], ['#e3f2fd','#90caf9'], ['#e8f5e9','#a5d6a7'],
+    ['#fff3e0','#ffcc80'], ['#f3e5f5','#ce93d8'], ['#e0f7fa','#80deea'],
+    ['#fff8e1','#ffe082'], ['#fbe9e7','#ffab91'], ['#e8eaf6','#9fa8da'],
+    ['#f1f8e9','#c5e1a5']
+];
+
+function startDragMatch(){
+    // Build pools with unique correct answers (required for 1-to-1 matching)
+    const zoneQs = [], usedZ = new Set();
+    shuffle(MATCH_QUESTIONS.filter(q=>q.type==='zone')).forEach(q => {
+        if(!usedZ.has(q.correct)){ zoneQs.push(q); usedZ.add(q.correct); }
+    });
+    const sizeQs = [], usedS = new Set();
+    shuffle(MATCH_QUESTIONS.filter(q=>q.type==='size')).forEach(q => {
+        if(!usedS.has(q.correct)){ sizeQs.push(q); usedS.add(q.correct); }
+    });
+    const animalQs = shuffle(MATCH_QUESTIONS.filter(q=>q.type==='animal'));
+    // 5 zone + 3 size + 2 animal = 10, all unique correct answers
+    const questions = shuffle([...zoneQs.slice(0,5), ...sizeQs.slice(0,3), ...animalQs.slice(0,2)]);
+    MDG = {
+        questions,
+        rightItems:   shuffle(questions.map(q=>q.correct)),
+        selected:     null,      // {side:'left'|'right', idx}
+        leftToRight:  {},        // leftIdx → rightIdx
+        colorAssign:  [],        // ordered leftIdx list; position = colorIdx
+        submitted:    false,
+        done:         false,
+        correct:0, wrong:0, bonus:0, net:0
+    };
+    renderMatch();
+}
+
+function renderMatch(){
+    const wrap = document.getElementById('tab-match');
+    if(MDG && !MDG.done){ wrap.innerHTML = _dmGameHTML(); return; }
+    if(MDG && MDG.done)  { wrap.innerHTML = _dmResultHTML(); return; }
+    if(MG  && !MG.done)  { wrap.innerHTML = _matchQuestionHTML(); return; }
+    MG = null; MDG = null;
+    wrap.innerHTML = _matchHomeHTML();
+}
+
+function _matchHomeHTML(){
+    const best = S.matchBest || null;
+    return `<div class="match-panel">
+        <div style="text-align:center;font-size:1.6em;margin-bottom:4px">🍽️</div>
+        <h3 style="text-align:center;font-weight:900;color:#e64a19;margin-bottom:4px">Food Match Challenge</h3>
+        <p style="text-align:center;color:#666;font-size:.82em;margin-bottom:10px">Match foods to biome, animal size, or specific animal!</p>
+        <div class="match-score-row">
+            <div class="match-badge">✅ Correct +$5</div>
+            <div class="match-badge">❌ Wrong −$2</div>
+        </div>
+        <div class="match-score-row" style="margin-bottom:12px">
+            <div class="match-badge">🏅 8/10 → +$50</div>
+            <div class="match-badge">🏆 9/10 → +$75</div>
+            <div class="match-badge">⭐ 10/10 → +$100</div>
+        </div>
+        ${best!==null?`<p style="text-align:center;font-size:.85em;font-weight:700;color:#2e7d32;margin-bottom:10px">🏆 Best: ${best}/10</p>`:''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="match-start-btn" style="padding:12px 6px;font-size:.9em" onclick="startMatch()">
+                🃏 Quick Quiz<br><small style="font-weight:400;font-size:.82em">One at a time</small>
+            </button>
+            <button class="match-start-btn" style="padding:12px 6px;font-size:.9em;background:linear-gradient(135deg,#7b1fa2,#9c27b0)" onclick="startDragMatch()">
+                🔗 Pairs Match<br><small style="font-weight:400;font-size:.82em">Tap to connect</small>
+            </button>
+        </div>
+    </div>`;
+}
+
+function startMatch(){
+    const zonePool   = shuffle(MATCH_QUESTIONS.filter(q=>q.type==='zone'));
+    const sizePool   = shuffle(MATCH_QUESTIONS.filter(q=>q.type==='size'));
+    const animalPool = shuffle(MATCH_QUESTIONS.filter(q=>q.type==='animal'));
+    // 6 zone + 2 size + 2 animal = 10 varied questions
+    const questions = shuffle([...zonePool.slice(0,6), ...sizePool.slice(0,2), ...animalPool.slice(0,2)]);
+    MG = { questions, current:0, correct:0, wrong:0, done:false, answered:false };
+    renderMatch();
+}
+
+function _matchQuestionHTML(){
+    const q  = MG.questions[MG.current];
+    const qn = MG.current + 1;
+    const earned = MG.correct * 5 - MG.wrong * 2;
+    const shuffled = shuffle([...q.opts]);
+    return `<div class="match-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-weight:900;color:#e64a19;font-size:.95em">🍽️ Food Match</span>
+            <span style="font-size:.8em;font-weight:700;color:#888">${qn} / 10</span>
+        </div>
+        <div class="progress-track" style="margin-bottom:12px">
+            <div class="progress-fill" style="width:${((qn-1)/10)*100}%;background:linear-gradient(90deg,#ff7043,#ffa726)"></div>
+        </div>
+        <div class="match-score-row">
+            <span class="match-badge green">✅ ${MG.correct}</span>
+            <span class="match-badge red">❌ ${MG.wrong}</span>
+            <span class="match-badge" style="background:#e8eaf6;border-color:#7986cb;color:#283593">${earned>=0?'+':''}$${earned} so far</span>
+        </div>
+        <div class="match-q-label" style="background:${q.type==='zone'?'#e3f2fd':q.type==='size'?'#f3e5f5':'#e8f5e9'};color:${q.type==='zone'?'#0d47a1':q.type==='size'?'#4a148c':'#1b5e20'}">
+            ${q.type==='zone' ? '🌍 Which biome eats this food?' : q.type==='size' ? '⚖️ Which animal size gets this food?' : '🐾 Which animal loves to eat this?'}
+        </div>
+        <div class="match-food-card">
+            <div class="match-food-em">${q.food}</div>
+            <div class="match-food-nm">${q.name}</div>
+            <div class="match-food-hint">"${q.hint}"</div>
+        </div>
+        <div class="answers" id="mq-opts">
+            ${shuffled.map(opt=>`<button class="ans-btn" data-opt="${opt}" onclick="answerMatch('${opt}')">${mqLabel(q.type,opt)}</button>`).join('')}
+        </div>
+        <div class="feedback" id="mq-feedback"></div>
+    </div>`;
+}
+
+function answerMatch(chosen){
+    if(!MG || MG.answered) return;
+    MG.answered = true;
+    const q = MG.questions[MG.current];
+    const correct = chosen === q.correct;
+
+    if(correct){ MG.correct++; S.money += 5; S.totalEarned += 5; spawnFloat(5,'#2e7d32'); }
+    else        { MG.wrong++;  S.money = Math.max(0, S.money - 2); spawnFloat(-2,'#c62828'); }
+    updateUI();
+
+    // Highlight buttons
+    document.querySelectorAll('#mq-opts .ans-btn').forEach(btn=>{
+        btn.disabled = true;
+        if(btn.dataset.opt === q.correct)                    btn.classList.add('correct');
+        else if(btn.dataset.opt === chosen && !correct)      btn.classList.add('wrong');
+    });
+
+    // Feedback message
+    const fb = document.getElementById('mq-feedback');
+    fb.className = 'feedback show ' + (correct ? 'correct' : 'wrong');
+    fb.innerHTML = correct
+        ? `✅ Correct! +$5 — <strong>${q.name}</strong> belongs to <strong>${mqLabel(q.type, q.correct)}</strong>!`
+        : `❌ Wrong! −$2 — <strong>${q.name}</strong> belongs to <strong>${mqLabel(q.type, q.correct)}</strong>`;
+
+    setTimeout(()=>{
+        MG.current++;
+        MG.answered = false;
+        if(MG.current >= 10){ MG.done = true; _showMatchResult(); }
+        else renderMatch();
+    }, 1900);
+}
+
+function _showMatchResult(){
+    const c = MG.correct, w = MG.wrong;
+    const pct = Math.round((c/10)*100);
+    let bonus = 0, bonusLabel = '';
+    if(c === 10){ bonus = 100; bonusLabel = '⭐ Perfect 10/10! +$100 bonus!'; }
+    else if(c === 9){ bonus = 75; bonusLabel = '🏆 9 out of 10! +$75 bonus!'; }
+    else if(c >= 8){ bonus = 50; bonusLabel = '🏅 80%+ accuracy! +$50 bonus!'; }
+
+    if(bonus){ S.money += bonus; S.totalEarned += bonus; updateUI(); spawnFloat(bonus,'#ff6d00'); }
+
+    const net = c*5 - w*2 + bonus;
+    const icon = c>=9 ? '🎉' : c>=7 ? '👍' : c>=5 ? '🙂' : '💪';
+    const wrap = document.getElementById('tab-match');
+    wrap.innerHTML = `<div class="match-panel">
+        <div style="text-align:center;padding:8px 0 16px">
+            <div style="font-size:3.5em;margin-bottom:6px">${icon}</div>
+            <div style="font-size:1.4em;font-weight:900;color:#e64a19;margin-bottom:4px">Round Complete!</div>
+            <div class="match-result-score">${c}/10 Correct — ${pct}%</div>
+            <div class="match-score-row" style="margin-bottom:12px">
+                <span class="match-badge green">✅ ${c} correct · +$${c*5}</span>
+                <span class="match-badge red">❌ ${w} wrong · −$${w*2}</span>
+            </div>
+            ${bonus ? `<div class="match-bonus-pill" style="background:linear-gradient(135deg,#ffd740,#ff6d00);color:#fff">${bonusLabel}</div>` : ''}
+            <div style="font-size:1.15em;font-weight:900;color:${net>=0?'#2e7d32':'#c62828'};margin:14px 0 18px">
+                Total Earned: ${net>=0?'+':''}$${net}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+                <button class="match-start-btn" style="font-size:.88em" onclick="MG=null;MDG=null;renderMatch()">🏠 Menu</button>
+                <button class="match-start-btn" style="font-size:.88em" onclick="startMatch()">🃏 Play Again</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ── Pairs Match interaction ───────────────────────────────────────────────
+function dmClick(side, idx){
+    if(!MDG || MDG.submitted) return;
+    const s = MDG.selected;
+    if(!s){
+        MDG.selected = {side, idx};
+    } else if(s.side === side && s.idx === idx){
+        MDG.selected = null;                       // deselect same item
+    } else if(s.side === side){
+        MDG.selected = {side, idx};                // switch on same side
+    } else {
+        // Cross-side → create connection
+        const li = side==='right' ? s.idx : idx;
+        const ri = side==='right' ? idx   : s.idx;
+        // Remove any existing connections for these two slots
+        if(MDG.leftToRight[li] !== undefined){
+            MDG.colorAssign = MDG.colorAssign.filter(l => l !== li);
+            delete MDG.leftToRight[li];
+        }
+        const prevL = parseInt(Object.keys(MDG.leftToRight).find(l => MDG.leftToRight[l] === ri));
+        if(!isNaN(prevL)){
+            MDG.colorAssign = MDG.colorAssign.filter(l => l !== prevL);
+            delete MDG.leftToRight[prevL];
+        }
+        MDG.leftToRight[li] = ri;
+        MDG.colorAssign.push(li);
+        MDG.selected = null;
+    }
+    renderMatch();
+}
+
+function submitDragMatch(){
+    if(!MDG) return;
+    MDG.submitted = true;
+    MDG.correct = 0; MDG.wrong = 0;
+    MDG.questions.forEach((q, li) => {
+        const ri = MDG.leftToRight[li];
+        const matched = ri !== undefined && MDG.rightItems[ri] === q.correct;
+        if(matched){ MDG.correct++; S.money += 5; S.totalEarned += 5; spawnFloat(5,'#2e7d32'); }
+        else        { MDG.wrong++;  S.money = Math.max(0, S.money-2); spawnFloat(-2,'#c62828'); }
+    });
+    let bonus = 0;
+    if(MDG.correct===10)     bonus = 100;
+    else if(MDG.correct===9) bonus = 75;
+    else if(MDG.correct>=8)  bonus = 50;
+    if(bonus){ S.money += bonus; S.totalEarned += bonus; spawnFloat(bonus,'#f57f17'); }
+    MDG.bonus = bonus;
+    MDG.net = MDG.correct*5 - MDG.wrong*2 + bonus;
+    if(!S.matchBest || MDG.correct > S.matchBest) S.matchBest = MDG.correct;
+    updateUI();
+    renderMatch();
+}
+
+function _dmGameHTML(){
+    const qs = MDG.questions;
+    const rs = MDG.rightItems;
+    const numConnected = Object.keys(MDG.leftToRight).length;
+    const allConnected = numConnected === 10;
+    // Build reverse map: rightIdx → leftIdx
+    const r2l = {};
+    Object.keys(MDG.leftToRight).forEach(l => { r2l[MDG.leftToRight[l]] = parseInt(l); });
+
+    const leftHTML = qs.map((q, li) => {
+        const ri = MDG.leftToRight[li];
+        const connected = ri !== undefined;
+        const colorIdx = connected ? MDG.colorAssign.indexOf(li) : -1;
+        const isSel = MDG.selected && MDG.selected.side==='left' && MDG.selected.idx===li;
+        let cls='dm-item', sty='';
+        if(MDG.submitted && connected){
+            cls += (rs[ri]===q.correct) ? ' dm-ok' : ' dm-err';
+        } else if(isSel){
+            cls += ' dm-sel';
+        } else if(connected && colorIdx>=0){
+            const [bg,bdr]=DM_COLORS[colorIdx%10]; sty=`background:${bg};border-color:${bdr}`;
+        }
+        const dot = (connected && !MDG.submitted) ? `<span class="dm-dot">${colorIdx+1}</span>` : '';
+        const result = MDG.submitted && connected ? (rs[ri]===q.correct ? ' ✅' : ' ❌') : '';
+        return `<div class="${cls}" style="${sty}" onclick="dmClick('left',${li})">${dot}
+            <span class="dm-em">${q.food}</span>
+            <span class="dm-lbl">${q.name}${result}</span></div>`;
+    }).join('');
+
+    const rightHTML = rs.map((key, ri) => {
+        const li = r2l[ri];
+        const connected = li !== undefined;
+        const colorIdx = connected ? MDG.colorAssign.indexOf(li) : -1;
+        const isSel = MDG.selected && MDG.selected.side==='right' && MDG.selected.idx===ri;
+        // Determine type for label
+        const qForKey = MDG.questions.find(q=>q.correct===key);
+        const qtype = qForKey ? qForKey.type : 'zone';
+        let cls='dm-item', sty='';
+        if(MDG.submitted && connected){
+            cls += (rs[ri]===MDG.questions[li].correct) ? ' dm-ok' : ' dm-err';
+        } else if(isSel){
+            cls += ' dm-sel';
+        } else if(connected && colorIdx>=0){
+            const [bg,bdr]=DM_COLORS[colorIdx%10]; sty=`background:${bg};border-color:${bdr}`;
+        }
+        const dot = (connected && !MDG.submitted) ? `<span class="dm-dot">${colorIdx+1}</span>` : '';
+        const result = MDG.submitted && connected ? (rs[ri]===MDG.questions[li].correct ? ' ✅' : ' ❌') : '';
+        return `<div class="${cls}" style="${sty}" onclick="dmClick('right',${ri})">${dot}
+            <span class="dm-lbl">${mqLabel(qtype,key)}${result}</span></div>`;
+    }).join('');
+
+    const submitBtn = MDG.submitted
+        ? `<button class="dm-submit-btn" style="background:linear-gradient(135deg,#ff7043,#ffa726)" onclick="MDG.done=true;renderMatch()">📊 See Results →</button>`
+        : `<button class="dm-submit-btn" onclick="submitDragMatch()" ${allConnected?'':'disabled'}>${allConnected?'✅ Check My Answers!':'Link all — '+numConnected+'/10 connected'}</button>`;
+
+    return `<div class="dm-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-weight:900;color:#7b1fa2;font-size:.95em">🔗 Pairs Match</span>
+            <span style="font-size:.8em;font-weight:700;color:#888">${numConnected}/10 linked</span>
+        </div>
+        <p style="font-size:.74em;color:#666;text-align:center;margin-bottom:6px">Tap a <strong>food</strong>, then tap its <strong>match</strong>. Tap a pair to remove it.</p>
+        <div class="dm-cols"><div><div class="dm-col-hd">🍽️ Foods</div>${leftHTML}</div>
+        <div><div class="dm-col-hd">🎯 Matches</div>${rightHTML}</div></div>
+        ${submitBtn}</div>`;
+}
+
+function _dmResultHTML(){
+    const c=MDG.correct, w=MDG.wrong, bonus=MDG.bonus||0, net=MDG.net;
+    const pct=Math.round((c/10)*100);
+    const icon=c>=9?'🎉':c>=7?'👍':c>=5?'🙂':'💪';
+    let bonusLabel='';
+    if(c===10) bonusLabel='⭐ Perfect 10/10! +$100 bonus!';
+    else if(c===9) bonusLabel='🏆 9/10! +$75 bonus!';
+    else if(c>=8)  bonusLabel='🏅 80%+ accuracy! +$50 bonus!';
+    return `<div class="match-panel"><div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:3.5em;margin-bottom:6px">${icon}</div>
+        <div style="font-size:1.4em;font-weight:900;color:#7b1fa2;margin-bottom:4px">Pairs Complete!</div>
+        <div class="match-result-score">${c}/10 Correct — ${pct}%</div>
+        <div class="match-score-row" style="margin-bottom:12px">
+            <span class="match-badge green">✅ ${c} correct · +$${c*5}</span>
+            <span class="match-badge red">❌ ${w} wrong · −$${w*2}</span>
+        </div>
+        ${bonus?`<div class="match-bonus-pill" style="background:linear-gradient(135deg,#ffd740,#ff6d00);color:#fff">${bonusLabel}</div>`:''}
+        <div style="font-size:1.15em;font-weight:900;color:${net>=0?'#2e7d32':'#c62828'};margin:14px 0 18px">
+            Total Earned: ${net>=0?'+':''}$${net}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="match-start-btn" style="font-size:.88em" onclick="MG=null;MDG=null;renderMatch()">🏠 Menu</button>
+        <button class="match-start-btn" style="font-size:.88em;background:linear-gradient(135deg,#7b1fa2,#9c27b0)" onclick="startDragMatch()">🔗 Play Again</button>
+    </div></div>`;
+}
+
+// ─────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────
+const _hasSave=loadGame();
+renderOpPicker();
+loadQuestion();
+updateUI();
+_updateHdrAvatar();
+if(_hasSave) setTimeout(()=>showToast('🎉 Welcome back! Your zoo progress was restored.'),400);
+</script>
+
+<!-- Register service worker for offline / PWA support -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>

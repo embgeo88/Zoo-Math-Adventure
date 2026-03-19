@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Rounded square background, warm orange -->
+  <rect width="512" height="512" rx="110" fill="#FF9800"/>
+  <!-- Inner gradient panel -->
+  <rect x="24" y="24" width="464" height="464" rx="90" fill="#FFA726"/>
+
+  <!-- Zoo gate arch -->
+  <rect x="156" y="290" width="200" height="140" rx="8" fill="#E65100"/>
+  <rect x="196" y="310" width="52" height="120" rx="6" fill="#FFF8E1"/>
+  <rect x="264" y="310" width="52" height="120" rx="6" fill="#FFF8E1"/>
+  <path d="M140 290 Q256 180 372 290 Z" fill="#E65100"/>
+  <path d="M160 290 Q256 200 352 290 Z" fill="#BF360C"/>
+  <!-- Gate sign -->
+  <rect x="186" y="254" width="140" height="38" rx="8" fill="#FFF8E1"/>
+  <text x="256" y="280" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="22" font-weight="900" fill="#E65100" text-anchor="middle">ZOO</text>
+
+  <!-- Lion face centered above gate -->
+  <!-- Mane -->
+  <circle cx="256" cy="148" r="78" fill="#FF6F00"/>
+  <!-- Face -->
+  <circle cx="256" cy="144" r="60" fill="#FFC107"/>
+  <!-- Ears -->
+  <circle cx="206" cy="104" r="18" fill="#FF6F00"/>
+  <circle cx="306" cy="104" r="18" fill="#FF6F00"/>
+  <circle cx="206" cy="104" r="11" fill="#FFC107"/>
+  <circle cx="306" cy="104" r="11" fill="#FFC107"/>
+  <!-- Eyes -->
+  <circle cx="238" cy="136" r="11" fill="#1A1A1A"/>
+  <circle cx="274" cy="136" r="11" fill="#1A1A1A"/>
+  <circle cx="235" cy="132" r="4"  fill="white"/>
+  <circle cx="271" cy="132" r="4"  fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="256" cy="154" rx="9" ry="7" fill="#E65100"/>
+  <!-- Smile -->
+  <path d="M238 164 Q256 176 274 164" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Whisker dots -->
+  <circle cx="228" cy="158" r="3" fill="#E65100"/>
+  <circle cx="220" cy="154" r="3" fill="#E65100"/>
+  <circle cx="284" cy="158" r="3" fill="#E65100"/>
+  <circle cx="292" cy="154" r="3" fill="#E65100"/>
+
+  <!-- Star accents -->
+  <text x="96"  y="120" font-size="48" text-anchor="middle">⭐</text>
+  <text x="416" y="120" font-size="48" text-anchor="middle">⭐</text>
+</svg>

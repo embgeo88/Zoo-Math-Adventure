@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cassowary: jet-black feathers, BRIGHT BLUE/RED bare neck, BROWN CASQUE helmet on head — unmistakable -->
+  <!-- Body — large, round, flightless -->
+  <ellipse cx="50" cy="65" rx="24" ry="22" fill="#1A1A2E"/>
+  <!-- Fluffy black feather texture hints -->
+  <ellipse cx="42" cy="60" rx="10" ry="12" fill="#16213E" opacity="0.6"/>
+  <ellipse cx="58" cy="58" rx="10" ry="12" fill="#16213E" opacity="0.6"/>
+  <!-- Neck — BRIGHT BLUE (the most striking visual feature) -->
+  <rect x="40" y="34" width="20" height="28" rx="10" fill="#1565C0"/>
+  <!-- RED wattles hanging from neck -->
+  <ellipse cx="40" cy="52" rx="5" ry="8" fill="#D32F2F"/>
+  <ellipse cx="60" cy="52" rx="5" ry="8" fill="#D32F2F"/>
+  <!-- Head — small, dark -->
+  <ellipse cx="50" cy="28" rx="12" ry="11" fill="#1A1A2E"/>
+  <!-- CASQUE: the brown/tan helmet on top of head — unique to cassowaries -->
+  <ellipse cx="50" cy="16" rx="11" ry="10" fill="#8D6E63"/>
+  <rect x="39" y="15" width="22" height="14" rx="4" fill="#8D6E63"/>
+  <!-- Casque texture -->
+  <line x1="40" y1="18" x2="60" y2="18" stroke="#6D4C41" stroke-width="1.5" opacity="0.6"/>
+  <line x1="40" y1="22" x2="60" y2="22" stroke="#6D4C41" stroke-width="1.5" opacity="0.6"/>
+  <!-- Eye — orange/yellow iris (distinctive) -->
+  <circle cx="44" cy="28" r="4.5" fill="#FF8F00"/>
+  <circle cx="44" cy="28" r="2.5" fill="#1A1A1A"/>
+  <circle cx="43" cy="27" r="1"   fill="white"/>
+  <!-- Beak — grey, sturdy -->
+  <path d="M50 34 Q38 38 35 43" stroke="#546E7A" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- Legs — long, grey, powerful -->
+  <rect x="38" y="84" width="8" height="14" rx="3" fill="#546E7A"/>
+  <rect x="54" y="84" width="8" height="14" rx="3" fill="#546E7A"/>
+  <!-- Dangerous inner claw on each foot -->
+  <path d="M38 98 L30 94" stroke="#37474F" stroke-width="3" stroke-linecap="round"/>
+  <path d="M54 98 L46 94" stroke="#37474F" stroke-width="3" stroke-linecap="round"/>
+</svg>

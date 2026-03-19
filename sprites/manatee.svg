@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Manatee: massive rounded GREY torpedo shape, paddle tail, tiny front flippers, wrinkled snout -->
+  <!-- Nothing like a dolphin — much fatter, round, no dorsal fin, paddle not fluke -->
+  <!-- Main body: big rounded cylinder -->
+  <ellipse cx="50" cy="58" rx="35" ry="24" fill="#9E9E9E"/>
+  <!-- Head: blunt, rounded, no beak -->
+  <ellipse cx="18" cy="56" rx="16" ry="15" fill="#9E9E9E"/>
+  <!-- Wrinkled/whiskery snout -->
+  <ellipse cx="7"  cy="57" rx="8" ry="7" fill="#8D8D8D"/>
+  <!-- Paddle tail: wide rounded paddle, NOT a fish fluke shape -->
+  <ellipse cx="87" cy="60" rx="10" ry="18" fill="#8D8D8D"/>
+  <!-- Paddle tail ridge -->
+  <line x1="77" y1="58" x2="97" y2="58" stroke="#757575" stroke-width="2"/>
+  <!-- Two tiny front flippers — small relative to body -->
+  <ellipse cx="32" cy="42" rx="9" ry="5" fill="#8D8D8D" transform="rotate(-30,32,42)"/>
+  <ellipse cx="32" cy="76" rx="9" ry="5" fill="#8D8D8D" transform="rotate(30,32,76)"/>
+  <!-- Nails on flippers (manatees have finger nails!) -->
+  <ellipse cx="27" cy="38" rx="2" ry="1.5" fill="#757575" transform="rotate(-30,27,38)"/>
+  <ellipse cx="31" cy="36" rx="2" ry="1.5" fill="#757575" transform="rotate(-20,31,36)"/>
+  <!-- Wrinkle lines on snout -->
+  <path d="M5 53 Q10 55 14 53" stroke="#757575" stroke-width="1.5" fill="none"/>
+  <path d="M5 57 Q10 59 14 57" stroke="#757575" stroke-width="1.5" fill="none"/>
+  <path d="M5 61 Q10 63 14 61" stroke="#757575" stroke-width="1.5" fill="none"/>
+  <!-- Small eye — very small relative to body -->
+  <circle cx="14" cy="50" r="3" fill="#424242"/>
+  <circle cx="13.3" cy="49.2" r="1" fill="white"/>
+  <!-- Nostril on top of snout -->
+  <ellipse cx="8" cy="51" rx="2.5" ry="1.5" fill="#616161"/>
+  <!-- Belly slightly lighter -->
+  <ellipse cx="50" cy="62" rx="28" ry="16" fill="#B0B0B0" opacity="0.3"/>
+</svg>

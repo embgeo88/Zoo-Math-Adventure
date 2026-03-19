@@ -1,0 +1,13 @@
+{
+  "name": "Zoo Math Adventure!",
+  "short_name": "Zoo Math",
+  "description": "Run your own zoo while practising maths — addition, subtraction, multiplication and more!",
+  "start_url": "./zoo-math-game.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff8e1",
+  "theme_color": "#FF9800",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Platypus: brown otter body + DUCK BILL + FLAT BEAVER TAIL — unlike any other animal -->
+  <!-- Body — streamlined, semi-aquatic -->
+  <ellipse cx="52" cy="60" rx="28" ry="16" fill="#6D4C41"/>
+  <!-- Head -->
+  <ellipse cx="22" cy="56" rx="16" ry="13" fill="#6D4C41"/>
+  <!-- FLAT BEAVER-LIKE TAIL — wide and paddle-shaped -->
+  <ellipse cx="84" cy="62" rx="14" ry="9" fill="#5D4037"/>
+  <!-- Tail texture lines -->
+  <line x1="72" y1="58" x2="96" y2="58" stroke="#4E342E" stroke-width="1.2" opacity="0.7"/>
+  <line x1="72" y1="62" x2="96" y2="62" stroke="#4E342E" stroke-width="1.2" opacity="0.7"/>
+  <line x1="72" y1="66" x2="96" y2="66" stroke="#4E342E" stroke-width="1.2" opacity="0.7"/>
+  <!-- DUCK BILL — wide, flat, leathery — the most distinctive feature in the animal kingdom -->
+  <ellipse cx="8" cy="57" rx="12" ry="7" fill="#8D6E63"/>
+  <!-- Bill texture / ridge line -->
+  <line x1="3" y1="57" x2="19" y2="57" stroke="#795548" stroke-width="1.5"/>
+  <!-- Bill nostrils -->
+  <ellipse cx="6" cy="54" rx="1.5" ry="1" fill="#5D4037"/>
+  <ellipse cx="10" cy="53.5" rx="1.5" ry="1" fill="#5D4037"/>
+  <!-- Feet — webbed (shown as simple paddle shapes) -->
+  <ellipse cx="34" cy="75" rx="9" ry="5" fill="#5D4037"/>
+  <ellipse cx="52" cy="76" rx="9" ry="5" fill="#5D4037"/>
+  <ellipse cx="68" cy="74" rx="9" ry="5" fill="#5D4037"/>
+  <!-- Eye — set back behind bill -->
+  <circle cx="18" cy="50" r="3.5" fill="#1A1A1A"/>
+  <circle cx="17" cy="49" r="1.2" fill="white"/>
+  <!-- Cream/tan underside -->
+  <ellipse cx="48" cy="63" rx="22" ry="10" fill="#A1887F" opacity="0.4"/>
+</svg>

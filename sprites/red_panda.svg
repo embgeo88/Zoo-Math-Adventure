@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Red Panda: RUSTY ORANGE/RED fur, BLACK legs and belly, white-lined ears, RINGED BUSHY TAIL -->
+  <!-- Body — stocky, low, covered in rusty red fur -->
+  <ellipse cx="52" cy="65" rx="26" ry="16" fill="#BF360C"/>
+  <!-- Head — round, raccoon-like -->
+  <ellipse cx="24" cy="52" rx="18" ry="17" fill="#BF360C"/>
+  <!-- WHITE ear lining (prominent white-edged ears) -->
+  <ellipse cx="12" cy="37" rx="8" ry="10" fill="#E0E0E0"/>
+  <ellipse cx="36" cy="35" rx="8" ry="10" fill="#E0E0E0"/>
+  <!-- Rusty red inside ears -->
+  <ellipse cx="12" cy="38" rx="5.5" ry="7" fill="#BF360C"/>
+  <ellipse cx="36" cy="36" rx="5.5" ry="7" fill="#BF360C"/>
+  <!-- WHITE face markings — stripe from eye to mouth corners -->
+  <ellipse cx="14" cy="52" rx="8" ry="7" fill="#FFCCBC"/>
+  <ellipse cx="32" cy="51" rx="8" ry="7" fill="#FFCCBC"/>
+  <!-- Dark eye patches / mask — ring-tailed-like -->
+  <ellipse cx="14" cy="48" rx="6" ry="5" fill="#3E2723"/>
+  <ellipse cx="32" cy="47" rx="6" ry="5" fill="#3E2723"/>
+  <!-- Eyes -->
+  <circle cx="14" cy="48" r="3.5" fill="#1A1A1A"/>
+  <circle cx="13" cy="47" r="1.2" fill="white"/>
+  <circle cx="32" cy="47" r="3.5" fill="#1A1A1A"/>
+  <circle cx="31" cy="46" r="1.2" fill="white"/>
+  <!-- Nose — dark -->
+  <ellipse cx="23" cy="57" rx="3.5" ry="2.5" fill="#212121"/>
+  <!-- BLACK legs and paws -->
+  <rect x="32" y="77" width="8" height="14" rx="4" fill="#212121"/>
+  <rect x="48" y="77" width="8" height="14" rx="4" fill="#212121"/>
+  <rect x="64" y="77" width="8" height="14" rx="4" fill="#212121"/>
+  <!-- BLACK belly -->
+  <ellipse cx="52" cy="68" rx="20" ry="11" fill="#212121" opacity="0.7"/>
+  <!-- RINGED BUSHY TAIL — alternating red and tan rings, curved up over back -->
+  <path d="M78 65 Q92 55 92 40 Q92 28 80 26" stroke="#BF360C"  stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M78 65 Q92 55 92 40 Q92 28 80 26" stroke="#E8C46A"  stroke-width="10" stroke-linecap="round" fill="none" stroke-dasharray="8,8" stroke-dashoffset="4"/>
+</svg>
