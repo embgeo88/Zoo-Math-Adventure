@@ -434,16 +434,16 @@ function generateQuestion(){
         const eq=makeEcon(); if(eq) return eq;
     }
 
-    // ── Cyclic difficulty: 2 easy → 2 medium → 2 hard → repeat ──
+    // ── Cyclic difficulty: 4 easy → 4 medium → 4 hard → repeat ──
     // At higher player levels (diff 4+) the floor rises: easy→med, med→hard
     // Guard against NaN (e.g. corrupted save) by defaulting to 0
     if(typeof S.diffSlot !== 'number' || isNaN(S.diffSlot)) S.diffSlot = 0;
-    const slot = S.diffSlot % 6;
-    S.diffSlot = (S.diffSlot + 1) % 6;
+    const slot = S.diffSlot % 12;
+    S.diffSlot = (S.diffSlot + 1) % 12;
     // Determine tier from slot, adjusted upward at higher levels
     let tier;
-    if(slot < 2) tier = diff >= 4 ? 'med'  : 'easy';
-    else if(slot < 4) tier = diff >= 4 ? 'hard' : 'med';
+    if(slot < 4) tier = diff >= 4 ? 'med'  : 'easy';
+    else if(slot < 8) tier = diff >= 4 ? 'hard' : 'med';
     else tier = 'hard';
 
     const op = pickOp();
