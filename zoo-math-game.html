@@ -1377,13 +1377,29 @@ function renderProgress(){
         </div>
 
         <!-- Habitat zones collected -->
-        <div style="background:#f8f9fa;border-radius:14px;padding:12px 14px">
+        <div style="background:#f8f9fa;border-radius:14px;padding:12px 14px;margin-bottom:14px">
             <div style="font-weight:900;font-size:.88em;color:#555;margin-bottom:8px">🌍 Habitat Zones</div>
             <div style="display:flex;flex-wrap:wrap;gap:7px">
                 ${Object.entries(ZONES).map(([zid,z])=>{
                     const has=ANIMALS.filter(a=>a.zone===zid).some(a=>(S.animals[a.id]||0)>0);
                     return `<div style="background:${has?z.bg:'#f5f5f5'};border:2px solid ${has?z.border:'#ddd'};border-radius:10px;padding:5px 10px;font-size:.8em;font-weight:700;color:${has?z.color:'#aaa'};opacity:${has?1:.6}">${z.label}${has?' ✓':' 🔒'}</div>`;
                 }).join('')}
+            </div>
+        </div>
+
+        <!-- Save backup / restore -->
+        <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border:2px solid #ce93d8;border-radius:14px;padding:14px 16px">
+            <div style="font-weight:900;font-size:.88em;color:#6a1b9a;margin-bottom:4px">💾 Backup My Zoo</div>
+            <div style="font-size:.75em;color:#555;margin-bottom:12px">Save your progress to a file and restore it on any device — great for moving between iPad and laptop!</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button onclick="exportSave()"
+                    style="padding:10px 6px;background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.82em;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(123,31,162,.3)">
+                    📥 Download Backup
+                </button>
+                <button onclick="importSave()"
+                    style="padding:10px 6px;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.82em;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(21,101,192,.3)">
+                    📤 Restore Backup
+                </button>
             </div>
         </div>
     </div>`;
@@ -1828,6 +1844,45 @@ function resetGame(){
     if(!confirm('Start over? This will erase your zoo and ALL progress!')) return;
     localStorage.removeItem(SAVE_KEY);
     location.reload();
+}
+
+// ── Save backup / restore ──────────────────────────────────────────────────
+function exportSave(){
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw){ showToast('No save found — play a bit first!'); return; }
+    const date = new Date().toISOString().slice(0,10);
+    const blob = new Blob([raw], {type:'application/json'});
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = `zoo-math-save-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('💾 Zoo backup downloaded!');
+}
+function importSave(){
+    const input = document.createElement('input');
+    input.type  = 'file';
+    input.accept= '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                // Basic sanity check — must look like a zoo save
+                if(typeof data.money === 'undefined' || typeof data.level === 'undefined')
+                    throw new Error('Not a valid zoo save file');
+                localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+                showToast('🎉 Zoo restored! Reloading...');
+                setTimeout(() => location.reload(), 1200);
+            } catch(err) {
+                showToast('❌ That file doesn\'t look like a zoo save!');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
 }
 
 // ─────────────────────────────────────────────────
