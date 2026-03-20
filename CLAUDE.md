@@ -46,7 +46,7 @@
 
 ## Architecture Notes
 - **Difficulty tiers**: lv 1–2 → diff 1, lv 3–5 → diff 2, lv 6–8 → diff 3, lv 9+ → diff 4
-- **Cyclic pattern**: 4 easy → 4 medium → 4 hard → repeat (slot 0–11 via `S.diffSlot`)
+- **Cyclic pattern**: 2 easy → 5 medium → 4 hard → repeat (11-question cycle, slot 0–10 via `S.diffSlot`)
 - **At diff 4+**: floor rises — easy slots become medium, medium slots become hard
 - **earnTier**: 1 = $6, 2 = $12, 3 = $18 reward per correct answer
 - **Emergency trigger**: every 14–18 questions (`S.nextChallenge`), only if player owns animals

@@ -786,12 +786,12 @@ function beep(type){
 function loadQuestion(){
     S.answered=false;
     S.question=generateQuestion();
-    const q=S.question, choices=makeChoices(q.answer);
+    const q=S.question, choices=q.choices||makeChoices(q.answer);
 
     // Practice bar
     const pb=document.getElementById('practiceBar');
     if(S.practiceType && S.practiceLeft>=0 && !q.isChallenge){
-        const opNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division'};
+        const opNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',conv:'Conversion'};
         pb.textContent=`🎯 Practice round! Let's try ${opNames[S.practiceType]||S.practiceType} again with new numbers.`;
         pb.classList.add('show');
     } else { pb.classList.remove('show'); }

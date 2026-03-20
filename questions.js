@@ -148,6 +148,115 @@ function makeHardMul(){
     ])};
 }
 
+// ── Conversion questions (units: kg↔g, L↔mL, m↔cm, medicine dosing) ──
+function _convChoices(correct, ...wrongs){
+    // Build a set of 4 unique positive choices
+    const pool=new Set([correct]);
+    for(const w of wrongs){ if(w>0 && w!==correct) pool.add(w); }
+    let pad=1;
+    while(pool.size<4){ if(correct+pad!==correct) pool.add(correct+pad); pad++; }
+    return shuffle([...pool]);
+}
+function makeConversion(diff){
+    const pool=[];
+    const c=pick(CRTRS), f=pick(FOODS);
+
+    // ── kg → g (×1000) — all levels ───────────────────────────────────────
+    {
+        const kg=rnd(1, diff>=3?8:4);
+        const ans=kg*1000;
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:2,
+            convFact:'1 kg = 1 000 g',
+            text:pick([
+                `Your ${c.e} ${c.n.slice(0,-1)} needs ${kg} kg of ${f} today. The food dispenser measures in grams. How many grams do you need?`,
+                `The vet ordered ${kg} kg of special feed pellets. Your kitchen scale shows grams. How many grams is that?`,
+                `You're restocking ${kg} kg of ${f} for the enclosure. The container label asks for grams. How many grams?`,
+            ]),
+            choices:_convChoices(ans, kg*100, kg*10, kg),
+        });
+    }
+
+    // ── L → mL (×1000) — all levels ───────────────────────────────────────
+    {
+        const L=rnd(1, diff>=3?6:3);
+        const ans=L*1000;
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:2,
+            convFact:'1 L = 1 000 mL',
+            text:pick([
+                `The vet needs ${L} litre${L>1?'s':''} of saline solution. The syringe is marked in millilitres. How many mL?`,
+                `You need to add ${L} litre${L>1?'s':''} of vitamins to the water tank. The pump measures in mL. How many millilitres?`,
+                `The cleaning team needs ${L} litre${L>1?'s':''} of disinfectant. Their spray bottle shows mL. How many mL?`,
+            ]),
+            choices:_convChoices(ans, L*100, L*10, L),
+        });
+    }
+
+    // ── Medicine dosing: dose (mg/kg) × body weight — all levels ──────────
+    {
+        const wt=rnd(3, diff>=3?25:12);   // animal weight kg
+        const mgPerKg=rnd(2,6);            // mg per kg
+        const ans=wt*mgPerKg;
+        const cA=pick(CRTRS);
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:3,
+            convFact:`dose = ${mgPerKg} mg × weight in kg`,
+            text:pick([
+                `Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. The pain medication needs ${mgPerKg} mg for every kg of body weight. How many mg should you give?`,
+                `The vet prescribes ${mgPerKg} mg of antibiotic per kg of body weight. Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. What is the correct dose in mg?`,
+                `A vitamin supplement requires ${mgPerKg} mg per kg of body weight. Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. How many mg in total?`,
+            ]),
+            choices:_convChoices(ans, wt+mgPerKg, Math.max(1,wt-mgPerKg), mgPerKg*2),
+        });
+    }
+
+    // ── m → cm (×100) — diff 2+ ───────────────────────────────────────────
+    if(diff>=2){
+        const m=rnd(2, diff>=3?12:6);
+        const ans=m*100;
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:2,
+            convFact:'1 m = 100 cm',
+            text:pick([
+                `The new ${c.n.slice(0,-1)} enclosure needs a fence ${m} metres long. The supplier measures in centimetres. How many cm of fencing?`,
+                `Your zoo's new habitat is ${m} metres wide. The builder needs the measurement in centimetres. How many cm?`,
+                `A keeper needs ${m} metres of rope for the enrichment area. The rope is sold per centimetre. How many cm?`,
+            ]),
+            choices:_convChoices(ans, m*1000, m*10, m),
+        });
+    }
+
+    // ── Minutes → seconds (×60) — diff 2+ ────────────────────────────────
+    if(diff>=2){
+        const mins=rnd(2, diff>=3?8:4);
+        const ans=mins*60;
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:2,
+            convFact:'1 min = 60 s',
+            text:pick([
+                `The automated feeder runs for ${mins} minute${mins>1?'s':''} per session. The timer counts in seconds. How many seconds is that?`,
+                `The zoo train completes one loop in ${mins} minute${mins>1?'s':''} . How many seconds is that?`,
+                `A keeper spends ${mins} minute${mins>1?'s':''} cleaning each habitat. The log records time in seconds. How many seconds?`,
+            ]),
+            choices:_convChoices(ans, mins*100, mins*6, mins*12),
+        });
+    }
+
+    // ── "1 g per every X kg" dosing (÷) — diff 3+ ────────────────────────
+    if(diff>=3){
+        const ratio=rnd(2,5);                // 1 g per ratio kg
+        const wt=ratio*rnd(2,6);             // weight is a clean multiple
+        const ans=wt/ratio;                  // integer result
+        const cA=pick(CRTRS);
+        pool.push({ tag:'🔄 Conversion', opType:'conv', answer:ans, earnTier:3,
+            convFact:`1 g per every ${ratio} kg`,
+            text:pick([
+                `Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. The medication is 1 g per every ${ratio} kg of body weight. How many grams should you give?`,
+                `A painkiller is dosed at 1 g per ${ratio} kg. Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. What is the correct dose in grams?`,
+            ]),
+            choices:_convChoices(ans, wt*ratio, Math.max(1,ans-1), ans+ratio),
+        });
+    }
+
+    return pick(pool);
+}
+
 // ── Economy question (uses player's actual zoo) ──
 function makeEcon(){
     const ids=Object.keys(S.animals);
@@ -302,6 +411,21 @@ function makeHint(q){
         const skip=[...Array(Math.min(answer,8))].map((_,i)=>b*(i+1)).join(', ');
         return { text:`Think: what × ${b} = ${a}? Count up by ${b}: ${skip}${answer>8?'…':''} — stop when you reach ${a}!`, work:null, extra:null };
     }
+
+    if(opType==='conv'){
+        const fact=q.convFact||'check the units!';
+        return { text:`Unit conversion: ${fact}. Make sure you're multiplying or dividing by the right number!`, work:null,
+            extra:`<div style="margin-top:8px;background:#e8f5e9;border:2px solid #81c784;border-radius:10px;padding:10px 12px">
+                <div style="font-weight:900;color:#2e7d32;font-size:.82em;margin-bottom:6px">📏 Key Conversions</div>
+                <div style="font-size:.76em;color:#333;line-height:1.8">
+                    1 kg = 1 000 g<br>
+                    1 L = 1 000 mL<br>
+                    1 m = 100 cm<br>
+                    1 min = 60 seconds<br>
+                    Medicine dose = mg/kg × body weight
+                </div>
+            </div>` };
+    }
     return null;
 }
 
@@ -401,6 +525,8 @@ function pickOp(){
     // Automatically add division at higher difficulties (not user-toggleable)
     if(diff>=3 && !pool.includes('div')){ pool.push('div'); }
     if(diff>=4 && !pool.includes('div')){ pool.push('div'); } // extra weight at diff 4
+    // Conversion questions auto-added at diff 2+ (one slot = same weight as any other op)
+    if(diff>=2){ pool.push('conv'); }
     if(!pool.length) pool.push('add'); // safety fallback
 
     // Adaptive weighting: push recently-wrong ops to practise more
@@ -434,33 +560,36 @@ function generateQuestion(){
         const eq=makeEcon(); if(eq) return eq;
     }
 
-    // ── Cyclic difficulty: 4 easy → 4 medium → 4 hard → repeat ──
+    // ── Cyclic difficulty: 2 easy → 5 medium → 4 hard → repeat (11-question cycle) ──
     // At higher player levels (diff 4+) the floor rises: easy→med, med→hard
     // Guard against NaN (e.g. corrupted save) by defaulting to 0
     if(typeof S.diffSlot !== 'number' || isNaN(S.diffSlot)) S.diffSlot = 0;
-    const slot = S.diffSlot % 12;
-    S.diffSlot = (S.diffSlot + 1) % 12;
+    const slot = S.diffSlot % 11;
+    S.diffSlot = (S.diffSlot + 1) % 11;
     // Determine tier from slot, adjusted upward at higher levels
     let tier;
-    if(slot < 4) tier = diff >= 4 ? 'med'  : 'easy';
-    else if(slot < 8) tier = diff >= 4 ? 'hard' : 'med';
-    else tier = 'hard';
+    if(slot < 2)      tier = diff >= 4 ? 'med'  : 'easy';
+    else if(slot < 7) tier = diff >= 4 ? 'hard' : 'med';
+    else              tier = 'hard';
 
     const op = pickOp();
 
     if(tier === 'hard'){
+        if(op==='conv') return makeConversion(diff);
         if(op==='add') return makeHardAdd();
         if(op==='sub') return makeHardSub();
         if(op==='mul') return makeHardMul();
         return makeDiv();
     }
     if(tier === 'med'){
+        if(op==='conv') return makeConversion(diff);
         if(op==='add') return makeMedAdd();
         if(op==='sub') return makeMedSub();
         if(op==='mul') return makeHardMul(); // 2-digit × 1-digit is medium-level
         return makeDiv();
     }
     // easy
+    if(op==='conv') return makeConversion(diff);
     if(op==='add') return makeAdd(diff);
     if(op==='sub') return makeSub(diff);
     if(op==='mul') return makeMul(diff);
