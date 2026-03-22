@@ -3,8 +3,8 @@
 ## Files
 | File | Purpose |
 |------|---------|
-| `zoo-math-game.html` | Full game (~2300 lines). HTML + CSS + main game logic in one `<script>` |
-| `questions.js` | All question generation (~280 lines). Loaded before the main script. |
+| `zoo-math-game.html` | Full game (~2750 lines). HTML + CSS + main game logic in one `<script>` |
+| `questions.js` | All question generation. Loaded before the main script. |
 
 ## questions.js — Function Map
 | Function | What it does |
@@ -33,16 +33,31 @@
 ## zoo-math-game.html — Key Section Line Refs (approx.)
 | Section | ~Line |
 |---------|-------|
-| CSS styles | 1–408 |
-| `<script src="questions.js">` tag | 409 |
-| Main `<script>` opens | 410 |
-| Game state `S` + `ANIMALS` array | 415–770 |
-| GAME LOGIC (`loadQuestion`, `checkAnswer`) | 775 |
-| Level-up / reward system | ~900 |
-| Shop / zoo view / visit tab | ~1100 |
-| Events system | ~1300 |
-| Match game | ~1900 |
-| `init()` / save-load | ~2200 |
+| CSS styles (incl. visual zoo + chart classes) | 1–355 |
+| `<script src="questions.js">` tag | ~356 |
+| Main `<script>` opens | ~357 |
+| Game state `S` (incl. `recentStreaks: []`) | ~720–804 |
+| GAME LOGIC (`loadQuestion`, `checkAnswer`) | ~830 |
+| Level-up / reward system | ~950 |
+| `renderZoo()` — animated visual zone map | ~1316 |
+| `renderShop()` | ~1400 |
+| `switchTab()` / `renderProgress()` | ~1559 |
+| `renderProgress()` — charts, pie, sparkline, dashboard | ~1573 |
+| `renderZooView()` — Visit tab zoo animation | ~1830 |
+| `buildingsSectionHtml()` | ~1730 |
+| `_setupAnimalWalkers()` / `_zvLoop` animation | ~1900 |
+| Match game | ~2000 |
+| `saveGame()` / `loadGame()` | ~2145 |
+
+## New Visual Features (latest update)
+- **Visual Zoo (My Zoo tab)**: `renderZoo()` now builds animated zone-based map. All 8 zones shown — unlocked zones display walking animals via `_setupAnimalWalkers()` + `_startZvAnim()`, locked zones show greyed-out placeholder. Day/night sky, stats bar, trophy case, buildings section.
+- **Data Visualizations (Progress tab)**:
+  - `compareHtml` — All-time vs Today side-by-side (`.compare-row`)
+  - `dashCards` — 3×2 zoo health grid (`.zoo-dash-grid`, `.zoo-dash-card`)
+  - `accBarHtml` — Vertical bar chart per op type (`.acc-chart-wrap`, `.acc-bar-col`)
+  - `pieHtml` — CSS `conic-gradient` pie chart by question type (`.pie-wrap`, `.pie-circle`)
+  - `sparkHtml` — SVG `<polyline>` streak sparkline from `S.recentStreaks` (`.spark-wrap`)
+- **`S.recentStreaks`**: Persisted array (max 10) of streak lengths captured when streak resets to 0 in `checkAnswer()`.
 
 ## Architecture Notes
 - **Difficulty tiers**: lv 1–2 → diff 1, lv 3–5 → diff 2, lv 6–8 → diff 3, lv 9+ → diff 4
