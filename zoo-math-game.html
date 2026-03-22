@@ -83,6 +83,18 @@ body {
 .feedback.challenge-win  { background: linear-gradient(135deg, #e8f5e9, #dcedc8); color: #1b5e20; border: 2px solid #66bb6a; }
 .feedback.challenge-lose { background: linear-gradient(135deg, #fce4ec, #ffcdd2); color: #880e4f; border: 2px solid #ef9a9a; }
 
+/* Conversion guide */
+.conv-guide { margin: 10px 0 6px; }
+.conv-guide-toggle { width:100%; text-align:left; background:#e8f5e9; border:2px solid #81c784; border-radius:12px; padding:8px 14px; font-family:Nunito,cursive; font-weight:900; font-size:.88em; color:#2e7d32; cursor:pointer; transition:background .15s; }
+.conv-guide-toggle:hover { background:#c8e6c9; }
+.conv-guide-toggle.open { border-radius:12px 12px 0 0; }
+.conv-guide-body { background:#f1f8e9; border:2px solid #81c784; border-top:none; border-radius:0 0 12px 12px; padding:10px 14px 12px; display:none; }
+.conv-guide-body table { width:100%; border-collapse:collapse; font-size:.82em; }
+.conv-guide-body td { padding:5px 8px; border-bottom:1px solid #c5e1a5; vertical-align:top; }
+.conv-guide-body tr:last-child td { border-bottom:none; }
+.conv-guide-body td:first-child { font-weight:900; color:#33691e; white-space:nowrap; width:52%; }
+.conv-guide-body td:last-child { color:#555; }
+
 .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff7043, #ffa726); color: #fff; border: none; border-radius: 16px; font-size: 1.15em; font-family: inherit; font-weight: 900; cursor: pointer; display: none; box-shadow: 0 4px 14px rgba(255,112,67,.4); transition: transform .2s; }
 .next-btn:hover { transform: translateY(-2px); }
 .next-btn.show { display: block; animation: fadeUp .3s ease; }
@@ -339,6 +351,19 @@ body {
         <div class="stakes" id="stakes"></div>
         <div style="text-align:center"><span class="q-tag" id="qTag">🔢 Loading...</span></div>
         <div class="q-text" id="qText">Loading your first question...</div>
+        <div class="conv-guide" id="convGuide" style="display:none">
+            <button class="conv-guide-toggle" id="convGuideToggle" onclick="toggleConvGuide()">📏 Conversion Guide ▸</button>
+            <div class="conv-guide-body" id="convGuideBody">
+                <table>
+                    <tr><td>1 kilogram (kg)</td><td>= 1 000 grams (g)</td></tr>
+                    <tr><td>1 litre (L)</td><td>= 1 000 millilitres (mL)</td></tr>
+                    <tr><td>1 metre (m)</td><td>= 100 centimetres (cm)</td></tr>
+                    <tr><td>1 minute (min)</td><td>= 60 seconds (s)</td></tr>
+                    <tr><td>Medicine dose (mg)</td><td>= mg per kg × body weight in kg</td></tr>
+                    <tr><td>Medicine dose (g)</td><td>= 1 g ÷ kg-per-dose × body weight in kg</td></tr>
+                </table>
+            </div>
+        </div>
         <div class="answers" id="answers"></div>
         <div class="hint-box" id="hintBox"></div>
         <div class="feedback" id="feedback"></div>
@@ -823,6 +848,19 @@ function loadQuestion(){
     document.getElementById('feedback').className='feedback';
     document.getElementById('nextBtn').className='next-btn';
 
+    // Show conversion guide only for conversion questions, always collapsed
+    const cg=document.getElementById('convGuide');
+    const cgBody=document.getElementById('convGuideBody');
+    const cgToggle=document.getElementById('convGuideToggle');
+    if(q.opType==='conv'){
+        cg.style.display='';
+        cgBody.style.display='none';
+        cgToggle.textContent='📏 Conversion Guide ▸';
+        cgToggle.classList.remove('open');
+    } else {
+        cg.style.display='none';
+    }
+
     const grid=document.getElementById('answers');
     grid.innerHTML='';
     choices.forEach(val=>{
@@ -831,6 +869,15 @@ function loadQuestion(){
         btn.onclick=()=>checkAnswer(val,btn);
         grid.appendChild(btn);
     });
+}
+
+function toggleConvGuide(){
+    const body=document.getElementById('convGuideBody');
+    const toggle=document.getElementById('convGuideToggle');
+    const open=body.style.display!=='none';
+    body.style.display=open?'none':'';
+    toggle.textContent=open?'📏 Conversion Guide ▸':'📏 Conversion Guide ▾';
+    toggle.classList.toggle('open',!open);
 }
 
 function checkAnswer(chosen, btn){
