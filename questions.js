@@ -148,6 +148,99 @@ function makeHardMul(){
     ])};
 }
 
+// ── Fraction questions (always produces a whole-number answer) ──
+function makeFraction(diff){
+    const c=pick(CRTRS), f=pick(FOODS);
+    const pool=[];
+
+    // Type A: 1/d of a whole → answer = whole/d (integer)
+    const denoms = diff>=3 ? [2,3,4,5,6,8,10] : diff>=2 ? [2,3,4,5,10] : [2,4,5,10];
+    const denom  = pick(denoms);
+    const quot   = rnd(2, diff<=1?6:diff<=2?10:15);
+    const whole  = denom * quot;
+    pool.push({ tag:'½ Fractions', opType:'frac', answer:quot, a:whole, b:denom,
+        earnTier: diff<=1?1:2,
+        text:pick([
+            `Your zoo has ${whole} ${c.e} ${c.n}. You feed 1/${denom} of them in the morning. How many ${c.n} get morning food?`,
+            `There are ${whole} portions of ${f} in the store. The keeper takes 1/${denom} for the first enclosure. How many portions is that?`,
+            `${whole} visitors are at the zoo. 1/${denom} of them join the keeper tour. How many visitors go on the tour?`,
+            `The vet has ${whole} health checks booked. 1/${denom} are for ${c.e} ${c.n}. How many ${c.n} checks are there?`,
+        ]),
+        choices:_convChoices(quot, whole, denom, quot+denom),
+    });
+
+    // Type B: find the value of one fractional part
+    // "You split 20 kg into d equal parts. How many kg in each part?" → 20/d
+    {
+        const denom2 = pick(diff>=3?[3,4,5,6,8]:[2,4,5,10]);
+        const partSize = rnd(2, diff<=1?8:diff<=2?12:18);
+        const totalAmt = denom2 * partSize;
+        pool.push({ tag:'½ Fractions', opType:'frac', answer:partSize, a:totalAmt, b:denom2,
+            earnTier: diff<=1?1:2,
+            text:pick([
+                `You divide ${totalAmt} kg of ${f} equally into ${denom2} daily feeds. How many kg is each feed?`,
+                `${totalAmt} ${c.e} ${c.n} are split equally across ${denom2} enclosures. How many per enclosure?`,
+                `The zoo earns $${totalAmt} over ${denom2} days equally. How much per day?`,
+                `${totalAmt} enrichment toys are shared equally among ${denom2} zones. How many toys per zone?`,
+            ]),
+            choices:_convChoices(partSize, totalAmt, totalAmt+denom2, denom2),
+        });
+    }
+
+    return pick(pool);
+}
+
+// ── Multi-step problems (two operations in sequence) ──
+function makeMultiStep(diff){
+    const c=pick(CRTRS), c2=pick(CRTRS), f=pick(FOODS);
+    const pool=[];
+    const mA=diff<=1?4:diff<=2?6:8, mB=diff<=1?4:diff<=2?6:8;
+
+    // Type A: (a × b) + c — multiply then add
+    {
+        let a,b,extra,ans;
+        do { a=rnd(2,mA); b=rnd(2,mB); extra=rnd(1,diff<=1?8:15); ans=a*b+extra; } while(ans>180);
+        pool.push({ tag:'🔢 Multi-step', opType:'multi', answer:ans, a, b,
+            earnTier:2, _step1:a*b, _op1:'×', _op2:'+', _c:extra,
+            text:pick([
+                `${a} ${c.e} ${c.n} each eat ${b} kg of ${f} a day, plus ${extra} kg set aside for cubs. Total kg needed?`,
+                `The keeper fills ${a} enclosures with ${b} animals each, then adds ${extra} animals to a rescue pen. How many animals in all?`,
+                `Each of ${a} zoo trains carries ${b} passengers per trip. After the last run, ${extra} staff members board. How many people total?`,
+            ]),
+        });
+    }
+
+    // Type B: (a + b) × c — add then multiply
+    {
+        let a,b,mult,ans;
+        do { a=rnd(2,8); b=rnd(1,6); mult=rnd(2,diff<=1?4:6); ans=(a+b)*mult; } while(ans>180);
+        pool.push({ tag:'🔢 Multi-step', opType:'multi', answer:ans, a, b,
+            earnTier:2, _step1:a+b, _op1:'+', _op2:'×', _c:mult,
+            text:pick([
+                `${a} ${c.e} ${c.n} and ${b} ${c2.e} ${c2.n} all need ${mult} kg of food each. How many kg altogether?`,
+                `You have ${a} adult ${c.n} and ${b} young ${c.n}. Each needs $${mult} of care per day. Total daily cost?`,
+                `${a} morning visitors and ${b} afternoon visitors each pay $${mult} entry. Total ticket money?`,
+            ]),
+        });
+    }
+
+    // Type C: a × b × c — three factors (diff 2+)
+    if(diff>=2){
+        let a,b,mult,ans;
+        do { a=rnd(2,5); b=rnd(2,5); mult=rnd(2,4); ans=a*b*mult; } while(ans>180);
+        pool.push({ tag:'🔢 Multi-step ★', opType:'multi', answer:ans, a, b,
+            earnTier:3, _step1:a*b, _op1:'×', _op2:'×', _c:mult,
+            text:pick([
+                `You have ${a} zones, each with ${b} enclosures, each holding ${mult} ${c.e} ${c.n}. How many ${c.n} total?`,
+                `The zoo runs ${a} shows a day for ${b} days, each with ${mult} ${c.e} ${c.n} performing. Total animal-performances?`,
+                `${a} keepers each look after ${b} enclosures. Each enclosure needs ${mult} kg of ${f} daily. Total kg?`,
+            ]),
+        });
+    }
+
+    return pick(pool);
+}
+
 // ── Conversion questions (units: kg↔g, L↔mL, m↔cm, medicine dosing) ──
 function _convChoices(correct, ...wrongs){
     // Build a set of 4 unique positive choices
@@ -412,6 +505,32 @@ function makeHint(q){
         return { text:`Think: what × ${b} = ${a}? Count up by ${b}: ${skip}${answer>8?'…':''} — stop when you reach ${a}!`, work:null, extra:null };
     }
 
+    if(opType==='frac'){
+        return { text:`Fractions mean equal sharing. To find 1/${q.b} of ${q.a}: divide ${q.a} ÷ ${q.b} = ${q.answer}.`,
+            work:null,
+            extra:`<div style="margin-top:8px;background:#fff3e0;border:2px solid #ffb74d;border-radius:10px;padding:10px 12px">
+                <div style="font-weight:900;color:#e65100;font-size:.82em;margin-bottom:6px">🍕 Fractions = Equal Parts</div>
+                <div style="font-size:.76em;color:#333;line-height:1.9">
+                    1/${q.b} of ${q.a} = ${q.a} ÷ ${q.b} = <strong>${q.answer}</strong><br>
+                    Think: split ${q.a} into ${q.b} equal groups — how many in each?
+                </div>
+            </div>` };
+    }
+
+    if(opType==='multi'){
+        const s1=q._step1, op1=q._op1||'×', op2=q._op2||'+', extra=q._c;
+        const step2desc = op2==='×' ? `${s1} × ${extra} = ${q.answer}` : `${s1} + ${extra} = ${q.answer}`;
+        return { text:`Two-step problem! Solve it in two parts — one step at a time.`,
+            work:null,
+            extra:`<div style="margin-top:8px;background:#e8f5e9;border:2px solid #66bb6a;border-radius:10px;padding:10px 12px">
+                <div style="font-weight:900;color:#2e7d32;font-size:.82em;margin-bottom:6px">📐 Two Steps</div>
+                <div style="font-size:.76em;color:#333;line-height:1.9">
+                    Step 1: ${q.a} ${op1} ${q.b} = <strong>${s1}</strong><br>
+                    Step 2: ${step2desc}
+                </div>
+            </div>` };
+    }
+
     if(opType==='conv'){
         const fact=q.convFact||'check the units!';
         return { text:`Unit conversion: ${fact}. Make sure you're multiplying or dividing by the right number!`, work:null,
@@ -525,8 +644,11 @@ function pickOp(){
     // Automatically add division at higher difficulties (not user-toggleable)
     if(diff>=3 && !pool.includes('div')){ pool.push('div'); }
     if(diff>=4 && !pool.includes('div')){ pool.push('div'); } // extra weight at diff 4
-    // Conversion questions auto-added at diff 2+ (one slot = same weight as any other op)
+    // Conversion questions auto-added at diff 2+
     if(diff>=2){ pool.push('conv'); }
+    // Fractions auto-added at diff 3+ (user can also toggle on earlier)
+    if(diff>=3 && !pool.includes('frac')){ pool.push('frac'); }
+    // Multi-step: opt-in only via toggle (stays user-controlled)
     if(!pool.length) pool.push('add'); // safety fallback
 
     // Adaptive weighting: push recently-wrong ops to practise more
@@ -575,24 +697,30 @@ function generateQuestion(){
     const op = pickOp();
 
     if(tier === 'hard'){
-        if(op==='conv') return makeConversion(diff);
-        if(op==='add') return makeHardAdd();
-        if(op==='sub') return makeHardSub();
-        if(op==='mul') return makeHardMul();
+        if(op==='conv')  return makeConversion(diff);
+        if(op==='frac')  return makeFraction(diff);
+        if(op==='multi') return makeMultiStep(diff);
+        if(op==='add')   return makeHardAdd();
+        if(op==='sub')   return makeHardSub();
+        if(op==='mul')   return makeHardMul();
         return makeDiv();
     }
     if(tier === 'med'){
-        if(op==='conv') return makeConversion(diff);
-        if(op==='add') return makeMedAdd();
-        if(op==='sub') return makeMedSub();
-        if(op==='mul') return makeHardMul(); // 2-digit × 1-digit is medium-level
+        if(op==='conv')  return makeConversion(diff);
+        if(op==='frac')  return makeFraction(diff);
+        if(op==='multi') return makeMultiStep(diff);
+        if(op==='add')   return makeMedAdd();
+        if(op==='sub')   return makeMedSub();
+        if(op==='mul')   return makeHardMul();
         return makeDiv();
     }
     // easy
-    if(op==='conv') return makeConversion(diff);
-    if(op==='add') return makeAdd(diff);
-    if(op==='sub') return makeSub(diff);
-    if(op==='mul') return makeMul(diff);
+    if(op==='conv')  return makeConversion(diff);
+    if(op==='frac')  return makeFraction(diff);
+    if(op==='multi') return makeMultiStep(diff);
+    if(op==='add')   return makeAdd(diff);
+    if(op==='sub')   return makeSub(diff);
+    if(op==='mul')   return makeMul(diff);
     return makeDiv();
 }
 

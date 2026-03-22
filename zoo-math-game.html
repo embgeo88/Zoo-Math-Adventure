@@ -170,10 +170,19 @@ body {
 /* ── Op Picker ── */
 .op-picker { display: flex; gap: 8px; margin-bottom: 12px; }
 .op-btn { flex: 1; padding: 10px 4px; border: 3px solid; border-radius: 16px; font-size: .82em; font-family: inherit; font-weight: 900; cursor: pointer; transition: all .2s; text-align: center; line-height: 1.35; background: transparent; }
-.op-btn[data-op="add"] { border-color: #4caf50; background: #e8f5e9; color: #1b5e20; }
-.op-btn[data-op="sub"] { border-color: #2196f3; background: #e3f2fd; color: #0d47a1; }
-.op-btn[data-op="mul"] { border-color: #ff9800; background: #fff3e0; color: #e65100; }
+.op-btn[data-op="add"]   { border-color: #4caf50; background: #e8f5e9; color: #1b5e20; }
+.op-btn[data-op="sub"]   { border-color: #2196f3; background: #e3f2fd; color: #0d47a1; }
+.op-btn[data-op="mul"]   { border-color: #ff9800; background: #fff3e0; color: #e65100; }
+.op-btn[data-op="frac"]  { border-color: #9c27b0; background: #f3e5f5; color: #4a148c; }
+.op-btn[data-op="multi"] { border-color: #00897b; background: #e0f2f1; color: #004d40; }
 .op-btn.op-off { opacity: .35; filter: grayscale(80%); }
+/* Quest banner */
+.quest-bar { background: linear-gradient(135deg,#fff8e1,#ffe082); border: 2px solid #ffd740; border-radius: 12px; padding: 8px 14px; font-size: .83em; font-weight: 700; color: #e65100; text-align: center; margin-bottom: 10px; display: none; cursor: pointer; }
+.quest-bar.show { display: block; animation: fadeUp .3s ease; }
+.quest-bar .q-reward { font-size: .72em; color: #795548; margin-top: 2px; }
+/* Misconception feedback */
+.misc-box { margin-top: 8px; padding: 9px 12px; background: linear-gradient(135deg,#fff3e0,#ffe0b2); border: 2px solid #ff9800; border-radius: 12px; font-size: .84em; font-weight: 700; color: #bf360c; display: none; }
+.misc-box.show { display: block; animation: fadeUp .3s ease; }
 .op-btn:not(.op-off):hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.18); }
 
 /* ── Rarity legend ── */
@@ -341,12 +350,18 @@ body {
 <!-- QUESTIONS TAB -->
 <div class="tab-content active" id="tab-questions">
     <div class="op-picker" id="opPicker">
-        <button class="op-btn" data-op="add" onclick="toggleOp('add')">➕<br>Addition</button>
-        <button class="op-btn" data-op="sub" onclick="toggleOp('sub')">➖<br>Subtraction</button>
-        <button class="op-btn" data-op="mul" onclick="toggleOp('mul')">✖️<br>Times Tables</button>
+        <button class="op-btn" data-op="add"   onclick="toggleOp('add')">➕<br>Addition</button>
+        <button class="op-btn" data-op="sub"   onclick="toggleOp('sub')">➖<br>Subtraction</button>
+        <button class="op-btn" data-op="mul"   onclick="toggleOp('mul')">✖️<br>Times Tables</button>
+        <button class="op-btn op-off" data-op="frac"  onclick="toggleOp('frac')">½<br>Fractions</button>
+        <button class="op-btn op-off" data-op="multi" onclick="toggleOp('multi')">🔢<br>Multi-step</button>
     </div>
     <div class="q-card" id="qCard">
         <div class="practice-bar" id="practiceBar"></div>
+        <div class="quest-bar" id="questBar">
+            <div id="questTitle"></div>
+            <div class="q-reward" id="questReward"></div>
+        </div>
         <div class="emerg-header" id="emergHeader">🚨 ZOO EMERGENCY!</div>
         <div class="stakes" id="stakes"></div>
         <div style="text-align:center"><span class="q-tag" id="qTag">🔢 Loading...</span></div>
@@ -365,6 +380,7 @@ body {
             </div>
         </div>
         <div class="answers" id="answers"></div>
+        <div class="misc-box" id="miscBox"></div>
         <div class="hint-box" id="hintBox"></div>
         <div class="feedback" id="feedback"></div>
         <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question ➡️</button>
@@ -744,6 +760,32 @@ const S = {
     avatar: { name:'Zookeeper', skin:'#FDBCB4', hairStyle:'short', hairColor:'#1a0f00', shirtColor:'#4caf50', hat:'none', eyes:'happy', accessory:'none' },
     // Food match best score (persisted)
     matchBest: 0,
+    // Quests (persisted)
+    quests: [
+        { id:'q_10',     title:'First 10 Correct',    desc:'Answer 10 questions correctly',               reward:30,             completed:false },
+        { id:'q_streak5',title:'On Fire! 🔥',          desc:'Build a streak of 5 correct in a row',        reward:40,             completed:false },
+        { id:'q_3ani',   title:'Zoo Builder',          desc:'Own 3 different animal species',              reward:50,             completed:false },
+        { id:'q_lvl3',   title:'Rising Zookeeper',     desc:'Reach Level 3',                               reward:60,             completed:false },
+        { id:'q_500',    title:'$500 Earned',          desc:'Earn $500 in total zoo income',               reward:75,             completed:false },
+        { id:'q_conv20', title:'Zoo Scientist 🔬',     desc:'Answer 20 conversion questions correctly',    reward:80,             completed:false },
+        { id:'q_frac10', title:'Fraction Master ½',    desc:'Answer 10 fraction questions correctly',      reward:60,             completed:false },
+        { id:'q_multi10',title:'Problem Solver 🔢',    desc:'Answer 10 multi-step questions correctly',    reward:90,             completed:false },
+        { id:'q_lvl5',   title:'Head Zookeeper',       desc:'Reach Level 5',                               reward:100,            completed:false },
+    ],
+    activeQuest: 0,
+    convCorrect:  0,   // lifetime conversion correct (for quest)
+    fracCorrect:  0,   // lifetime fraction correct
+    multiCorrect: 0,   // lifetime multi-step correct
+};
+
+// Session stats — reset every page load, never persisted
+const SESSION = {
+    startTime: Date.now(),
+    correctByOp: {},   // opType → correct count this session
+    wrongByOp:   {},   // opType → wrong count this session
+    streakHigh:  0,
+    coinsEarned: 0,
+    questionsAnswered: 0,
 };
 
 // ─────────────────────────────────────────────────
@@ -808,6 +850,96 @@ function beep(type){
 // ─────────────────────────────────────────────────
 //  GAME LOGIC
 // ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────
+//  QUEST SYSTEM
+// ─────────────────────────────────────────────────
+function getActiveQuest(){
+    while(S.activeQuest < S.quests.length && S.quests[S.activeQuest].completed)
+        S.activeQuest++;
+    return S.activeQuest < S.quests.length ? S.quests[S.activeQuest] : null;
+}
+function checkQuests(){
+    const q=getActiveQuest();
+    if(!q) return;
+    let met=false;
+    if(q.id==='q_10')      met=S.correctCount>=10;
+    if(q.id==='q_streak5') met=S.streak>=5||S.bestStreak>=5;
+    if(q.id==='q_3ani')    met=Object.keys(S.animals).length>=3;
+    if(q.id==='q_lvl3')    met=S.level>=3;
+    if(q.id==='q_500')     met=S.totalEarned>=500;
+    if(q.id==='q_conv20')  met=(S.convCorrect||0)>=20;
+    if(q.id==='q_frac10')  met=(S.fracCorrect||0)>=10;
+    if(q.id==='q_multi10') met=(S.multiCorrect||0)>=10;
+    if(q.id==='q_lvl5')    met=S.level>=5;
+    if(!met) return;
+    q.completed=true;
+    S.money+=q.reward; S.totalEarned+=q.reward;
+    saveGame();
+    spawnFloat(q.reward,'#f57f17');
+    showToast(`🎯 Quest complete! "${q.title}" — +$${q.reward} bonus!`);
+    updateQuestBanner();
+    updateUI();
+}
+function updateQuestBanner(){
+    const qb=document.getElementById('questBar');
+    const qt=document.getElementById('questTitle');
+    const qr=document.getElementById('questReward');
+    if(!qb) return;
+    const q=getActiveQuest();
+    if(!q){ qb.classList.remove('show'); return; }
+    qt.textContent=`🎯 Quest: ${q.desc}`;
+    qr.textContent=`Reward: +$${q.reward}`;
+    qb.classList.add('show');
+}
+
+// ─────────────────────────────────────────────────
+//  MISCONCEPTION DETECTION
+// ─────────────────────────────────────────────────
+function detectMisconception(q, chosen){
+    const {opType,a,b,answer}=q;
+    if(!opType||opType==='econ'||opType==='multi') return null;
+    if(opType==='add'){
+        if(chosen===a-b||chosen===b-a) return `Did you subtract instead of add? ${a} + ${b} means combining both — count up!`;
+        if(Math.abs(chosen-answer)===10) return `Very close! Check your carrying — when a column reaches 10+, carry 1 to the next column.`;
+    }
+    if(opType==='sub'){
+        if(chosen===b-a) return `Flip it! Always take the smaller from the bigger: ${a} − ${b} (start with the larger number).`;
+        if(chosen===a+b) return `Did you add instead of subtract? The question asks how many are left — we take away.`;
+    }
+    if(opType==='mul'){
+        if(chosen===a+b) return `That's addition, not multiplication! ${a} × ${b} means ${a} groups of ${b} — not ${a} plus ${b}.`;
+        if(chosen===answer+a||chosen===answer-a||chosen===answer+b||chosen===answer-b)
+            return `Off by one group! Count your groups carefully — do you have exactly ${Math.min(a,b)} groups of ${Math.max(a,b)}?`;
+    }
+    if(opType==='div'){
+        if(chosen===a*b) return `That's multiplication — division means splitting ${a} into ${b} equal groups, not making it bigger!`;
+        if(chosen===a-b) return `That's subtraction — division is about equal sharing: ${a} ÷ ${b} = how many in each group?`;
+    }
+    if(opType==='frac'){
+        if(chosen===a*b||chosen===a) return `To find 1/${b} of ${a}, divide (not multiply): ${a} ÷ ${b} = ${answer}.`;
+        if(chosen===b) return `${b} is the denominator — the number of equal parts. The answer is ${a} ÷ ${b} = ${answer}.`;
+    }
+    if(opType==='conv'&&q.convFact){
+        const fact=q.convFact;
+        if(fact.includes('1 kg = 1 000 g')){ const kg=answer/1000;
+            if(chosen===kg*100) return `Almost! 1 kg = 1 000 g (not 100 g) — multiply by 1 000.`;
+            if(chosen===kg)     return `Same number but different unit! 1 kg = 1 000 g — multiply by 1 000.`; }
+        if(fact.includes('1 L = 1 000 mL')){ const L=answer/1000;
+            if(chosen===L*100) return `Close! 1 L = 1 000 mL (not 100 mL) — multiply by 1 000.`;
+            if(chosen===L)     return `Same number but different unit! 1 L = 1 000 mL.`; }
+        if(fact.includes('1 m = 100 cm')){ const m=answer/100;
+            if(chosen===m*1000) return `Close! 1 m = 100 cm (not 1 000 cm) — multiply by 100.`;
+            if(chosen===m*10)   return `Almost! 1 m = 100 cm — multiply by 100, not 10.`;
+            if(chosen===m)      return `Same number but different unit! 1 m = 100 cm — multiply by 100.`; }
+        if(fact.includes('1 min = 60 s')){ const mins=answer/60;
+            if(chosen===mins*100) return `Close! 1 minute = 60 seconds (not 100) — multiply by 60.`;
+            if(chosen===mins*6)   return `Almost! 1 minute = 60 seconds, not 6 — multiply by 60.`; }
+        if(fact.includes('dose ='))
+            return `Remember: dose = mg per kg × body weight in kg. Multiply both numbers together!`;
+    }
+    return null;
+}
+
 function loadQuestion(){
     S.answered=false;
     S.question=generateQuestion();
@@ -816,7 +948,7 @@ function loadQuestion(){
     // Practice bar
     const pb=document.getElementById('practiceBar');
     if(S.practiceType && S.practiceLeft>=0 && !q.isChallenge){
-        const opNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',conv:'Conversion'};
+        const opNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',conv:'Conversion',frac:'Fractions',multi:'Multi-step'};
         pb.textContent=`🎯 Practice round! Let's try ${opNames[S.practiceType]||S.practiceType} again with new numbers.`;
         pb.classList.add('show');
     } else { pb.classList.remove('show'); }
@@ -846,6 +978,8 @@ function loadQuestion(){
     document.getElementById('qText').textContent=q.text;
     document.getElementById('hintBox').className='hint-box';
     document.getElementById('feedback').className='feedback';
+    document.getElementById('miscBox').className='misc-box';
+    updateQuestBanner();
     document.getElementById('nextBtn').className='next-btn';
 
     // Show conversion guide only for conversion questions, always collapsed
@@ -895,21 +1029,22 @@ function checkAnswer(chosen, btn){
             btn.classList.add('correct');
             S.streak++; S.correctCount++; S.emergencyWins++;
             if(S.streak>S.bestStreak) S.bestStreak=S.streak;
+            SESSION.correctByOp[q.opType]=(SESSION.correctByOp[q.opType]||0)+1;
+            if(S.streak>SESSION.streakHigh) SESSION.streakHigh=S.streak;
             fb.textContent=q.correctOutcome+` 💰 -$${cost}`;
             fb.className='feedback show challenge-win';
             beep('ok'); spawnFloat(-cost,'#c62828');
             showHint(q, hb, true);
-            checkAchievements(); saveGame();
+            checkAchievements(); checkQuests(); saveGame();
         } else {
             btn.classList.add('wrong');
             document.querySelectorAll('.ans-btn').forEach(b=>{ if(parseInt(b.dataset.val)===q.answer) b.classList.add('correct'); });
             S.streak=0;
             fb.textContent=q.wrongOutcome+` 💸 -$${cost}`;
             fb.className='feedback show challenge-lose';
+            SESSION.wrongByOp[q.opType]=(SESSION.wrongByOp[q.opType]||0)+1;
             beep('no');
-            // Show hint for wrong challenge answer
             showHint(q, hb);
-            // Adaptive tracking
             trackWrong(q.opType);
             saveGame();
         }
@@ -918,6 +1053,13 @@ function checkAnswer(chosen, btn){
         if(correct){
             btn.classList.add('correct');
             S.streak++; S.correctCount++;
+            // Per-type lifetime counters (for quests)
+            if(q.opType==='conv')  S.convCorrect =(S.convCorrect ||0)+1;
+            if(q.opType==='frac')  S.fracCorrect =(S.fracCorrect ||0)+1;
+            if(q.opType==='multi') S.multiCorrect=(S.multiCorrect||0)+1;
+            // Session tracking
+            SESSION.correctByOp[q.opType]=(SESSION.correctByOp[q.opType]||0)+1;
+            SESSION.questionsAnswered++;
             // Tier-based earnings: easy=$6, medium=$12, hard 3-digit=$18
             const tierBase=[0,6,12,18];
             const base=tierBase[q.earnTier||1];
@@ -926,6 +1068,8 @@ function checkAnswer(chosen, btn){
             let earned=base;
             if(S.streak>=5) earned+=sb[1]; else if(S.streak>=3) earned+=sb[0];
             S.money+=earned; S.score+=earned;
+            SESSION.coinsEarned+=earned;
+            if(S.streak>SESSION.streakHigh) SESSION.streakHigh=S.streak;
             const sx=S.streak>=5?' 🔥🔥 Super streak!':S.streak>=3?' 🔥 Streak bonus!':'';
             // If we just nailed a practice question, give extra praise
             const wasPractice=S.practiceType===q.opType && S.practiceLeft===0;
@@ -940,11 +1084,10 @@ function checkAnswer(chosen, btn){
             fb.className='feedback show correct';
             S.totalEarned+=earned;
             if(S.streak>S.bestStreak) S.bestStreak=S.streak;
-            // Advance day/night phase every 15 questions
             S.dayPhase=Math.min(3,Math.floor(S.qCount/15));
             beep('ok'); spawnFloat(earned,'#2e7d32'); checkLevelUp();
             showHint(q, hb, true);
-            checkAchievements(); saveGame();
+            checkAchievements(); checkQuests(); saveGame();
         } else {
             btn.classList.add('wrong');
             document.querySelectorAll('.ans-btn').forEach(b=>{ if(parseInt(b.dataset.val)===q.answer) b.classList.add('correct'); });
@@ -955,6 +1098,12 @@ function checkAnswer(chosen, btn){
             S.score=Math.max(0, S.score-penalty);
             fb.textContent=`❌ The answer was ${q.answer}. -$${penalty} 💸`;
             fb.className='feedback show wrong'; beep('no');
+            // Session + misconception
+            SESSION.wrongByOp[q.opType]=(SESSION.wrongByOp[q.opType]||0)+1;
+            SESSION.questionsAnswered++;
+            const mb=document.getElementById('miscBox');
+            const mMsg=detectMisconception(q, chosen);
+            if(mMsg&&mb){ mb.textContent='💭 '+mMsg; mb.className='misc-box show'; }
             spawnFloat(-penalty,'#c62828');
             showHint(q, hb);
             trackWrong(q.opType);
@@ -1375,8 +1524,62 @@ function renderProgress(){
             </div>`;
         }).join('');
 
+    // ── Session summary data ──
+    const opFullNames={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',conv:'Conversion',frac:'Fractions',multi:'Multi-step'};
+    const elapsed=Math.round((Date.now()-SESSION.startTime)/1000);
+    const smins=Math.floor(elapsed/60), ssecs=elapsed%60;
+    const timeStr=smins>0?`${smins}m ${ssecs}s`:`${ssecs}s`;
+    const allOps=[...new Set([...Object.keys(SESSION.correctByOp),...Object.keys(SESSION.wrongByOp)])];
+    const opAccBars=allOps.map(op=>{
+        const c=SESSION.correctByOp[op]||0, w=SESSION.wrongByOp[op]||0, tot=c+w;
+        if(!tot) return '';
+        const pct=Math.round(c/tot*100);
+        const filled=Math.round(pct/10);
+        const bar='█'.repeat(filled)+'░'.repeat(10-filled);
+        const col=pct>=80?'#2e7d32':pct>=60?'#f57f17':'#c62828';
+        return `<div style="margin:5px 0;font-size:.76em;font-weight:700;color:#333;display:flex;align-items:center;gap:8px">
+            <span style="min-width:90px">${opFullNames[op]||op}</span>
+            <span style="font-family:monospace;color:${col};letter-spacing:1px">${bar}</span>
+            <span style="color:${col}">${pct}%</span>
+            <span style="color:#aaa;font-size:.85em">(${c}/${c+w})</span>
+        </div>`;
+    }).join('');
+    const weakOps=allOps.filter(op=>{ const c=SESSION.correctByOp[op]||0,w=SESSION.wrongByOp[op]||0; return (c+w)>=2&&c/(c+w)<0.6; });
+
+    // ── Quest card data ──
+    const questsHtml=(S.quests||[]).map(q=>`
+        <div style="display:flex;align-items:center;gap:8px;margin:5px 0;padding:8px 10px;background:${q.completed?'#e8f5e9':'#fffde7'};border:2px solid ${q.completed?'#66bb6a':'#ffd740'};border-radius:11px">
+            <span style="font-size:1.2em">${q.completed?'✅':'🎯'}</span>
+            <div style="flex:1">
+                <div style="font-size:.82em;font-weight:900;color:${q.completed?'#2e7d32':'#e65100'}">${q.title}</div>
+                <div style="font-size:.7em;color:#777">${q.desc}</div>
+            </div>
+            <div style="font-size:.75em;font-weight:700;color:#795548;white-space:nowrap">+$${q.reward}</div>
+        </div>`).join('');
+
     wrap.innerHTML=`<div style="background:#fff;border-radius:22px;padding:20px;box-shadow:0 5px 20px rgba(0,0,0,.15)">
         <h2 style="text-align:center;color:#ff7043;font-size:1.2em;margin-bottom:14px">📊 My Progress</h2>
+
+        <!-- Today's session card -->
+        <div style="background:#e3f2fd;border:2px solid #42a5f5;border-radius:14px;padding:12px 14px;margin-bottom:14px">
+            <div style="font-weight:900;font-size:.88em;color:#0d47a1;margin-bottom:8px">📊 Today's Session</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
+                ${[['⏱️',timeStr,'Time'],['❓',SESSION.questionsAnswered,'Questions'],['🔥',SESSION.streakHigh,'Best streak'],['💰','+$'+SESSION.coinsEarned,'Earned']].map(([em,v,l])=>`
+                <div style="background:#fff;border-radius:10px;padding:7px 4px;text-align:center">
+                    <div style="font-size:.95em">${em}</div>
+                    <div style="font-size:.95em;font-weight:900;color:#333">${v}</div>
+                    <div style="font-size:.62em;color:#888">${l}</div>
+                </div>`).join('')}
+            </div>
+            ${allOps.length?`<div style="font-weight:900;font-size:.76em;color:#555;margin-bottom:4px">Accuracy by topic:</div>${opAccBars}`:'<div style="font-size:.78em;color:#aaa">Answer some questions to see your accuracy!</div>'}
+            ${weakOps.length?`<div style="margin-top:8px;padding:7px 10px;background:#fff3e0;border:2px solid #ffb74d;border-radius:9px;font-size:.78em;font-weight:700;color:#e65100">💪 Keep practising: ${weakOps.map(op=>opFullNames[op]||op).join(', ')}</div>`:''}
+        </div>
+
+        <!-- Quests card -->
+        <div style="background:#fffde7;border:2px solid #ffd740;border-radius:14px;padding:12px 14px;margin-bottom:14px">
+            <div style="font-weight:900;font-size:.88em;color:#e65100;margin-bottom:6px">🎯 Quests</div>
+            ${questsHtml}
+        </div>
 
         <!-- Avatar card -->
         <div style="background:linear-gradient(135deg,#e3f2fd,#f3e5f5);border-radius:18px;padding:16px;margin-bottom:14px;text-align:center;border:2px solid #e1bee7;cursor:pointer" onclick="openAvatarEditor()">
@@ -1874,6 +2077,8 @@ function saveGame(){
             buildings:S.buildings, food:S.food,
             zoneUpgrades:S.zoneUpgrades, crossUpgrades:S.crossUpgrades,
             avatar:S.avatar, matchBest:S.matchBest,
+            quests:S.quests, activeQuest:S.activeQuest,
+            convCorrect:S.convCorrect||0, fracCorrect:S.fracCorrect||0, multiCorrect:S.multiCorrect||0,
         };
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     }catch(e){}
@@ -2384,6 +2589,7 @@ const _hasSave=loadGame();
 renderOpPicker();
 loadQuestion();
 updateUI();
+updateQuestBanner();
 _updateHdrAvatar();
 if(_hasSave) setTimeout(()=>showToast('🎉 Welcome back! Your zoo progress was restored.'),400);
 </script>
