@@ -1,6 +1,6 @@
 // Zoo Math Adventure — Service Worker
 // Bump CACHE_NAME whenever files change to force a refresh on all devices
-const CACHE_NAME = 'zoo-math-v1';
+const CACHE_NAME = 'zoo-math-v2';
 
 // All local files the game needs — pre-cached on install so the game works offline immediately
 const PRECACHE = [
