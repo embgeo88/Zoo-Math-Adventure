@@ -343,6 +343,123 @@ body {
 .compare-card.today   { background:linear-gradient(135deg,#f3e5f5,#e1bee7); border:2px solid #ce93d8; }
 .compare-hd     { font-size:.68em; font-weight:900; color:#555; margin-bottom:6px; letter-spacing:.4px; }
 .compare-stat   { font-size:.8em; font-weight:700; color:#333; line-height:1.7; }
+/* ══════════════════════════════════════════════
+   INTERACTIVE HABITATS
+   ══════════════════════════════════════════════ */
+
+/* ── All enclosures: tappable cursor + active press ── */
+.enclosure { cursor: pointer; }
+.enclosure:active { transform: scale(.97); }
+
+/* ── Tap flash ring (all zones) ── */
+@keyframes enc-tap-ring {
+  0%   { box-shadow: inset 0 0 0 3px rgba(255,193,7,.9), 0 0 18px rgba(255,193,7,.45); }
+  100% { box-shadow: inset 0 0 0 0   rgba(255,193,7,0),  0 0 0    rgba(255,193,7,0);   }
+}
+.enclosure.enc-tapped { animation: enc-tap-ring .55s ease-out; }
+
+/* ══ SAVANNA — Grass Sway ══ */
+@keyframes grass-sway {
+  0%,100% { transform: rotate(-4deg) scaleY(1);    }
+  50%     { transform: rotate( 5deg) scaleY(1.06); }
+}
+.grass-layer  { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius:inherit; }
+.grass-blade  {
+  position: absolute;
+  width: 4px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, #a5d6a7, #2e7d32);
+  animation: grass-sway var(--gdur,1.8s) ease-in-out infinite;
+  transform-origin: bottom center;
+  pointer-events: none;
+  z-index: 1;
+}
+.grass-blade.tall { width:3px; background:linear-gradient(180deg,#c8e6c9,#388e3c); }
+
+/* ══ AQUARIUM / RIVER — Bubbles + Water shimmer ══ */
+@keyframes bubble-rise {
+  0%   { transform:translateY(0)    scale(1);   opacity:.85; }
+  80%  { opacity:.25; }
+  100% { transform:translateY(-62px) scale(1.5); opacity:0; }
+}
+.bubble-layer  { position:absolute; inset:0; pointer-events:none; }
+.bubble {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.9), rgba(100,220,255,.25));
+  border: 1px solid rgba(130,210,255,.55);
+  animation: bubble-rise var(--bdur,2s) ease-in infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes water-shimmer { 0%,100%{opacity:.5} 50%{opacity:1} }
+.water-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(38,198,218,.06) 0%, rgba(0,96,100,.14) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: water-shimmer 3.5s ease-in-out infinite;
+}
+.enc-aqua { background:linear-gradient(180deg,#e0f7fa,#b2ebf2)!important; border-color:#26c6da!important; }
+
+/* Water-tap ripple */
+@keyframes ripple-out {
+  0%   { transform:translate(-50%,-50%) scale(.05); opacity:.9; }
+  100% { transform:translate(-50%,-50%) scale(4.5); opacity:0; }
+}
+.water-ripple {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(38,198,218,.9);
+  animation: ripple-out .7s ease-out forwards;
+  pointer-events: none;
+  z-index: 12;
+}
+
+/* ══ ARCTIC — Snowflakes ══ */
+@keyframes snow-fall {
+  0%   { transform:translateY(-8px) rotate(0deg);   opacity:.95; }
+  100% { transform:translateY(65px) rotate(220deg); opacity:0; }
+}
+.snow-layer  { position:absolute; inset:0; overflow:hidden; border-radius:inherit; pointer-events:none; }
+.snowflake {
+  position: absolute;
+  top: -4px;
+  font-size: .6em;
+  color: #e3f2fd;
+  text-shadow: 0 0 4px rgba(144,202,249,.9);
+  animation: snow-fall var(--sdur,2.5s) linear infinite;
+  pointer-events: none;
+  z-index: 2;
+  user-select: none;
+}
+.enc-arctic { background:linear-gradient(180deg,#e3f2fd,#bbdefb)!important; border-color:#42a5f5!important; }
+
+/* Arctic ice-slide */
+@keyframes ice-slide {
+  0%   { transform:translateY(0)  rotate(0deg);   }
+  25%  { transform:translateY(5px) rotate(-22deg); }
+  75%  { transform:translateY(5px) rotate(-22deg); }
+  100% { transform:translateY(0)  rotate(0deg);   }
+}
+.zoo-animal-walker.sliding .z-bob { animation:ice-slide .85s ease-in-out forwards!important; }
+
+/* ── Tap reaction emoji burst ── */
+@keyframes tap-burst {
+  0%   { transform:translate(-50%,-50%) scale(.4); opacity:1; }
+  60%  { transform:translate(-50%,-100%) scale(1.2); opacity:1; }
+  100% { transform:translate(-50%,-170%) scale(.9); opacity:0; }
+}
+.tap-burst {
+  position: absolute;
+  font-size: 1.3em;
+  pointer-events: none;
+  animation: tap-burst .75s ease-out forwards;
+  z-index: 20;
+  left: 50%; top: 50%;
+}
     </style>
 </head>
 <body>
@@ -1315,24 +1432,7 @@ function renderZoo(){
     const net=income-upkeep;
 
     // Inline enclosure builder (mirrors makeEnclosure in renderZooView)
-    function buildEnc(id){
-        const a=ANIMALS.find(x=>x.id===id), cnt=S.animals[id];
-        const [d1,d2]=ZV_DECORS[id]||['🌿','🪨'];
-        const num=Math.min(cnt,3);
-        let walkers='';
-        for(let i=0;i<num;i++){
-            const delay=(i*0.18).toFixed(2), dur=(0.42+i*0.07).toFixed(2);
-            walkers+=`<div class="zoo-animal-walker" data-zid="${id}">
-                <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${spr(a.u,a.emoji,44)}</div>
-            </div>`;
-        }
-        return `<div class="enclosure" id="enc-${id}">
-            <div class="enc-label">${a.emoji} ${a.name}${cnt>1?` ×${cnt}`:''}</div>
-            <em class="enc-decor" style="left:3px;bottom:22px;font-size:.95em">${d1}</em>
-            <em class="enc-decor" style="right:4px;bottom:22px;font-size:.95em">${d2}</em>
-            <div class="enc-ground"></div>${walkers}
-        </div>`;
-    }
+    function buildEnc(id){ return _encHtml(id); }
 
     const zoneOrder=['savanna','tropical','arctic','rainforest','river','mountain','aquarium','oceania'];
     const zonesHtml=zoneOrder.map(zid=>{
@@ -1880,6 +1980,74 @@ const ZV_DECORS={
 };
 const ZV_GUESTS=['👦','👧','👨','👩','👴','👵'];
 
+// ─────────────────────────────────────────────────
+//  SHARED ENCLOSURE HTML BUILDER
+//  Used by renderZoo() and renderZooView().
+//  Adds zone-specific ambient layers + tap handler.
+// ─────────────────────────────────────────────────
+function _encHtml(id){
+    const a=ANIMALS.find(x=>x.id===id), cnt=S.animals[id];
+    const [d1,d2]=ZV_DECORS[id]||['🌿','🪨'];
+    const num=Math.min(cnt,3);
+
+    // Animal walkers
+    let walkers='';
+    for(let i=0;i<num;i++){
+        const delay=(i*0.18).toFixed(2), dur=(0.42+i*0.07).toFixed(2);
+        walkers+=`<div class="zoo-animal-walker" data-zid="${id}">
+            <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${spr(a.u,a.emoji,44)}</div>
+        </div>`;
+    }
+
+    // Zone-specific ambient layer
+    let ambient='', extraClass='';
+    const zone=a.zone;
+
+    if(zone==='savanna'||zone==='tropical'||zone==='mountain'||zone==='rainforest'){
+        // Swaying grass blades
+        const blades=Array.from({length:9},(_,i)=>{
+            const lp=(8+i*10+Math.round(Math.random()*6)).toFixed(0);
+            const h=(10+Math.round(Math.random()*10)).toFixed(0);
+            const tall=h>15;
+            const delay=(i*0.21).toFixed(2);
+            const dur=(1.4+i*0.11).toFixed(2);
+            return `<div class="grass-blade${tall?' tall':''}" style="left:${lp}%;bottom:18px;height:${h}px;--gdur:${dur}s;animation-delay:${delay}s"></div>`;
+        }).join('');
+        ambient=`<div class="grass-layer">${blades}</div>`;
+    }
+
+    if(zone==='aquarium'||zone==='river'){
+        // Rising bubbles + water-tint overlay
+        const bubbles=Array.from({length:6},(_,i)=>{
+            const lp=(10+i*14+Math.round(Math.random()*7)).toFixed(0);
+            const delay=(i*0.38).toFixed(2);
+            const dur=(1.7+i*0.28).toFixed(2);
+            return `<div class="bubble" style="left:${lp}%;--bdur:${dur}s;animation-delay:${delay}s"></div>`;
+        }).join('');
+        ambient=`<div class="bubble-layer">${bubbles}</div><div class="water-overlay"></div>`;
+        extraClass=' enc-aqua';
+    }
+
+    if(zone==='arctic'){
+        // Falling snowflakes
+        const flakes=Array.from({length:9},(_,i)=>{
+            const lp=(5+i*11+Math.round(Math.random()*5)).toFixed(0);
+            const delay=(i*0.33).toFixed(2);
+            const dur=(2.1+i*0.22).toFixed(2);
+            return `<div class="snowflake" style="left:${lp}%;--sdur:${dur}s;animation-delay:${delay}s">❄</div>`;
+        }).join('');
+        ambient=`<div class="snow-layer">${flakes}</div>`;
+        extraClass=' enc-arctic';
+    }
+
+    return `<div class="enclosure${extraClass}" id="enc-${id}" onclick="tapEnclosure('${id}',event)">
+        <div class="enc-label">${a.emoji} ${a.name}${cnt>1?` ×${cnt}`:''}</div>
+        <em class="enc-decor" style="left:3px;bottom:22px;font-size:.95em">${d1}</em>
+        <em class="enc-decor" style="right:4px;bottom:22px;font-size:.95em">${d2}</em>
+        <div class="enc-ground"></div>${walkers}${ambient}
+    </div>`;
+}
+
 function renderZooView(){
     _zvActive=false;
     _animalWalkers.length=0;
@@ -1896,24 +2064,7 @@ function renderZooView(){
     }
 
     // Helper: build one enclosure card
-    function makeEnclosure(id){
-        const a=ANIMALS.find(x=>x.id===id), cnt=S.animals[id];
-        const [d1,d2]=ZV_DECORS[id]||['🌿','🪨'];
-        const num=Math.min(cnt,3);
-        let walkers='';
-        for(let i=0;i<num;i++){
-            const delay=(i*0.18).toFixed(2), dur=(0.42+i*0.07).toFixed(2);
-            walkers+=`<div class="zoo-animal-walker" data-zid="${id}">
-                <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${spr(a.u,a.emoji,44)}</div>
-            </div>`;
-        }
-        return `<div class="enclosure" id="enc-${id}">
-            <div class="enc-label">${a.emoji} ${a.name}${cnt>1?` ×${cnt}`:''}</div>
-            <em class="enc-decor" style="left:3px;bottom:22px;font-size:.95em">${d1}</em>
-            <em class="enc-decor" style="right:4px;bottom:22px;font-size:.95em">${d2}</em>
-            <div class="enc-ground"></div>${walkers}
-        </div>`;
-    }
+    function makeEnclosure(id){ return _encHtml(id); }
 
     // Group animals by zone
     const byZone={};
@@ -1988,6 +2139,103 @@ function _setupGuestWalkers(){
 function _startZvAnim(){
     _zvActive=true;
     if(!_zvRunning){ _zvRunning=true; requestAnimationFrame(_zvLoop); }
+}
+
+// ─────────────────────────────────────────────────
+//  TAP ENCLOSURE — interactive habitat reactions
+// ─────────────────────────────────────────────────
+function tapEnclosure(id, e){
+    e && e.stopPropagation();
+    const a=ANIMALS.find(x=>x.id===id);
+    if(!a) return;
+    const enc=document.getElementById('enc-'+id);
+    if(!enc) return;
+
+    // Flash ring on every tap (all zones)
+    enc.classList.remove('enc-tapped');
+    void enc.offsetWidth;               // force reflow to restart animation
+    enc.classList.add('enc-tapped');
+
+    // ── SAVANNA / TROPICAL / MOUNTAIN / RAINFOREST → Tap to run ──
+    if(['savanna','tropical','mountain','rainforest'].includes(a.zone)){
+        if(enc.dataset.running==='1') return;   // already running, debounce
+        enc.dataset.running='1';
+
+        // Speed up all walkers belonging to this enclosure 4×
+        const myWalkers=_animalWalkers.filter(w=>w.el.dataset.zid===id);
+        myWalkers.forEach(w=>{
+            w._savedSpd=w.spd;
+            w.spd=w.spd>=0 ? Math.abs(w.spd)*4 : -Math.abs(w.spd)*4;
+        });
+
+        // Emoji burst above enclosure
+        const burst=document.createElement('div');
+        burst.className='tap-burst';
+        burst.textContent='💨';
+        enc.appendChild(burst);
+        setTimeout(()=>burst.remove(), 800);
+
+        setTimeout(()=>{
+            delete enc.dataset.running;
+            myWalkers.forEach(w=>{
+                if(w._savedSpd!==undefined){
+                    const dir=w.spd>=0?1:-1;
+                    w.spd=Math.abs(w._savedSpd)*dir;
+                    delete w._savedSpd;
+                }
+            });
+        }, 1600);
+    }
+
+    // ── AQUARIUM / RIVER → Water ripple at tap position ──
+    else if(['aquarium','river'].includes(a.zone)){
+        const rect=enc.getBoundingClientRect();
+        const touch=e.touches&&e.touches[0];
+        const cx=(touch?touch.clientX:e.clientX)||rect.left+rect.width/2;
+        const cy=(touch?touch.clientY:e.clientY)||rect.top+rect.height/2;
+        const x=cx-rect.left, y=cy-rect.top;
+
+        const ripple=document.createElement('div');
+        ripple.className='water-ripple';
+        ripple.style.left=x+'px';
+        ripple.style.top=y+'px';
+        enc.appendChild(ripple);
+        setTimeout(()=>ripple.remove(), 750);
+
+        // Also burst a bubble emoji
+        const burst=document.createElement('div');
+        burst.className='tap-burst';
+        burst.textContent='🫧';
+        burst.style.left=x+'px'; burst.style.top=y+'px';
+        enc.appendChild(burst);
+        setTimeout(()=>burst.remove(), 800);
+    }
+
+    // ── ARCTIC → Penguin ice-slide ──
+    else if(a.zone==='arctic'){
+        const myWalkers=_animalWalkers.filter(w=>w.el.dataset.zid===id);
+        myWalkers.forEach(w=>{
+            w.el.classList.remove('sliding');
+            void w.el.offsetWidth;
+            w.el.classList.add('sliding');
+            w._savedSpd=w.spd;
+            w.spd=w.spd>=0 ? Math.abs(w.spd)*5 : -Math.abs(w.spd)*5;
+            setTimeout(()=>{
+                w.el.classList.remove('sliding');
+                if(w._savedSpd!==undefined){
+                    const dir=w.spd>=0?1:-1;
+                    w.spd=Math.abs(w._savedSpd)*dir;
+                    delete w._savedSpd;
+                }
+            }, 950);
+        });
+
+        const burst=document.createElement('div');
+        burst.className='tap-burst';
+        burst.textContent='🌨️';
+        enc.appendChild(burst);
+        setTimeout(()=>burst.remove(), 800);
+    }
 }
 
 function _zvLoop(ts){
