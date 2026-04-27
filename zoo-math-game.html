@@ -456,6 +456,145 @@ body {
   flex-shrink: 0;
   /* background-size and background-position set dynamically by JS */
 }
+/* ══════════════════════════════════════════════
+   SHOW YOUR WORK PANEL
+   ══════════════════════════════════════════════ */
+@keyframes work-slide-in {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes work-correct-pop {
+  0%   { transform:scale(1); }
+  45%  { transform:scale(1.18); }
+  100% { transform:scale(1); }
+}
+@keyframes work-wrong-shake {
+  0%,100% { transform:translateX(0); }
+  20%     { transform:translateX(-7px); }
+  40%     { transform:translateX(7px); }
+  60%     { transform:translateX(-5px); }
+  80%     { transform:translateX(5px); }
+}
+#workPanel {
+  background: linear-gradient(135deg,#e8f5e9,#f3e5f5);
+  border: 2.5px solid #66bb6a;
+  border-radius: 14px;
+  padding: 14px 16px 12px;
+  margin: 8px 0 12px;
+  animation: work-slide-in .28s ease;
+}
+.work-header {
+  font-weight: 900;
+  color: #2e7d32;
+  font-size: 1em;
+  text-align: center;
+  margin-bottom: 9px;
+}
+.work-decomp {
+  background: #fff9c4;
+  border: 1.5px solid #ffd740;
+  border-radius: 9px;
+  padding: 7px 12px;
+  font-size: .87em;
+  font-weight: 700;
+  color: #5d4037;
+  text-align: center;
+  margin-bottom: 11px;
+  line-height: 1.5;
+}
+.work-step-prompt {
+  font-weight: 800;
+  color: #1565c0;
+  font-size: .93em;
+  text-align: center;
+  margin-bottom: 9px;
+}
+.work-step-choices {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.work-btn {
+  background: #fff;
+  border: 2px solid #42a5f5;
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-size: 1em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .12s, transform .1s;
+  min-width: 62px;
+  font-family: inherit;
+}
+.work-btn:hover:not(:disabled) { background:#e3f2fd; }
+.work-btn:active { transform:scale(.95); }
+.work-btn.work-correct {
+  background: #c8e6c9;
+  border-color: #2e7d32;
+  color: #1b5e20;
+  animation: work-correct-pop .3s ease;
+}
+.work-btn.work-wrong {
+  background: #ffcdd2;
+  border-color: #c62828;
+  color: #b71c1c;
+  animation: work-wrong-shake .4s ease;
+}
+.work-step-result {
+  text-align: center;
+  font-size: .86em;
+  font-weight: 700;
+  min-height: 18px;
+  color: #2e7d32;
+}
+.work-step-result.wrong { color: #c62828; }
+.work-progress {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 10px;
+}
+.work-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #ccc;
+  transition: background .2s;
+}
+.work-dot.done   { background: #4caf50; }
+.work-dot.active { background: #42a5f5; box-shadow:0 0 0 2px #bbdefb; }
+.work-done-msg {
+  text-align: center;
+  font-weight: 900;
+  color: #2e7d32;
+  font-size: .97em;
+  padding: 4px 0 6px;
+  animation: work-slide-in .25s ease;
+}
+.work-summary {
+  background: rgba(255,255,255,.65);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 6px;
+}
+.work-summary-line {
+  font-size: .8em;
+  color: #333;
+  font-weight: 700;
+  padding: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Lock answer buttons while work panel is active */
+.answers.work-locked .ans-btn {
+  opacity: .38;
+  pointer-events: none;
+  filter: grayscale(75%);
+  transition: opacity .2s, filter .2s;
+}
+
 /* ── Tap reaction emoji burst ── */
 @keyframes tap-burst {
   0%   { transform:translate(-50%,-50%) scale(.4); opacity:1; }
@@ -532,6 +671,7 @@ body {
                 </table>
             </div>
         </div>
+        <div id="workPanel" style="display:none"></div>
         <div class="answers" id="answers"></div>
         <div class="misc-box" id="miscBox"></div>
         <div class="hint-box" id="hintBox"></div>
@@ -992,6 +1132,110 @@ function beep(type){
 // Question generation is in questions.js (loaded above)
 
 // ─────────────────────────────────────────────────
+//  SHOW YOUR WORK — interactive scaffolding panel
+// ─────────────────────────────────────────────────
+let _wSteps=null, _wIdx=0;
+
+function _loadWorkPanel(q){
+    _wSteps=makeWorkSteps(q);
+    _wIdx=0;
+    const wp=document.getElementById('workPanel');
+    const grid=document.getElementById('answers');
+    if(!_wSteps||_wSteps.length===0){
+        wp.style.display='none';
+        grid.classList.remove('work-locked');
+        return;
+    }
+    grid.classList.add('work-locked');
+
+    // Build decomp hint line
+    let decompHtml='';
+    if(q.opType==='mul' && q.a>=10){
+        const tens=Math.floor(q.a/10)*10, ones=q.a%10;
+        decompHtml=`<div class="work-decomp">Think of <b>${q.a} × ${q.b}</b> as: (<b>${tens} × ${q.b}</b>) + (<b>${ones} × ${q.b}</b>)</div>`;
+    } else if(q.opType==='multi'){
+        const op1name=q._op1==='×'?'multiply':'add';
+        const op2name=q._op2==='×'?'then multiply':'then add';
+        decompHtml=`<div class="work-decomp">Two steps: <b>${op1name}</b> first, <b>${op2name}</b>!</div>`;
+    }
+
+    wp.innerHTML=`
+        <div class="work-header">🧮 Show Your Work!</div>
+        ${decompHtml}
+        <div class="work-step-area">
+            <div class="work-step-prompt" id="workStepPrompt"></div>
+            <div class="work-step-choices" id="workStepChoices"></div>
+            <div class="work-step-result" id="workStepResult"></div>
+        </div>
+        <div class="work-progress" id="workProgress"></div>`;
+    wp.style.display='';
+    _renderWorkStep();
+}
+
+function _renderWorkStep(){
+    const step=_wSteps[_wIdx];
+    // Progress dots
+    document.getElementById('workProgress').innerHTML=
+        _wSteps.map((_,i)=>`<div class="work-dot ${i<_wIdx?'done':i===_wIdx?'active':''}"></div>`).join('');
+    document.getElementById('workStepPrompt').textContent=step.prompt;
+    document.getElementById('workStepResult').textContent='';
+    document.getElementById('workStepResult').className='work-step-result';
+    // Choices
+    const choicesEl=document.getElementById('workStepChoices');
+    choicesEl.innerHTML='';
+    step.choices.forEach(val=>{
+        const btn=document.createElement('button');
+        btn.className='work-btn'; btn.textContent=val; btn.dataset.val=val;
+        btn.onclick=()=>_handleWorkStep(val,btn);
+        choicesEl.appendChild(btn);
+    });
+}
+
+function _handleWorkStep(val, btn){
+    const step=_wSteps[_wIdx];
+    const correct=(Number(val)===Number(step.answer));
+    const result=document.getElementById('workStepResult');
+    document.querySelectorAll('.work-btn').forEach(b=>b.style.pointerEvents='none');
+
+    if(correct){
+        btn.classList.add('work-correct');
+        result.textContent='✅ Correct!';
+        beep('ok');
+        setTimeout(()=>{
+            _wIdx++;
+            if(_wIdx>=_wSteps.length) _workComplete();
+            else _renderWorkStep();
+        },650);
+    } else {
+        btn.classList.add('work-wrong');
+        result.textContent=`❌ Not quite — the answer is ${step.answer}.`;
+        result.className='work-step-result wrong';
+        beep('no');
+        // Reveal correct after 0.5 s, advance after 1.8 s
+        setTimeout(()=>document.querySelectorAll('.work-btn').forEach(b=>{
+            if(Number(b.dataset.val)===Number(step.answer)) b.classList.add('work-correct');
+        }), 500);
+        setTimeout(()=>{
+            _wIdx++;
+            if(_wIdx>=_wSteps.length) _workComplete();
+            else _renderWorkStep();
+        }, 1800);
+    }
+}
+
+function _workComplete(){
+    const wp=document.getElementById('workPanel');
+    // Build a compact summary of all steps
+    const lines=_wSteps.map(s=>
+        `<div class="work-summary-line"><span style="color:#4caf50">✓</span> ${s.tip}</div>`
+    ).join('');
+    wp.innerHTML=`
+        <div class="work-done-msg">🎉 Great work! Now choose your final answer:</div>
+        <div class="work-summary">${lines}</div>`;
+    document.getElementById('answers').classList.remove('work-locked');
+}
+
+// ─────────────────────────────────────────────────
 //  GAME LOGIC
 // ─────────────────────────────────────────────────
 // ─────────────────────────────────────────────────
@@ -1147,6 +1391,7 @@ function loadQuestion(){
         btn.onclick=()=>checkAnswer(val,btn);
         grid.appendChild(btn);
     });
+    _loadWorkPanel(q);  // Show step-by-step work panel (mul 2-digit & multi-step only)
 }
 
 function toggleConvGuide(){

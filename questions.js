@@ -724,6 +724,71 @@ function generateQuestion(){
     return makeDiv();
 }
 
+// ── Work-step choice generator ──
+// Returns 4 shuffled choices including the correct answer and plausible distractors
+function _stepChoices(ans){
+    const set=new Set([ans]);
+    const spread=Math.max(1,Math.round(ans*0.12));
+    const tries=[
+        Math.floor(ans/10)*10,         // round to nearest 10 (common error)
+        ans+spread, ans-spread,
+        ans+spread*2, ans-spread*2,
+        ans+1, ans-1,
+        Math.round(ans*1.1), Math.round(ans*0.9),
+    ];
+    for(const v of tries){
+        if(v>0 && v!==ans) set.add(v);
+        if(set.size>=4) break;
+    }
+    let pad=1;
+    while(set.size<4){ set.add(ans+pad); pad++; }
+    return shuffle([...set]).slice(0,4);
+}
+
+// ── Interactive "Show Your Work" step generator ──
+// Returns an array of step objects, or null if this question type doesn't need scaffolding.
+// Each step: { prompt, answer, choices, tip }
+function makeWorkSteps(q){
+    if(!q || q.isChallenge || q.opType==='econ') return null;
+
+    // ── 2-digit × 1-digit: distributive property ──
+    if(q.opType==='mul' && q.a>=10 && q.a%10!==0){
+        const a=q.a, b=q.b;
+        const tens=Math.floor(a/10)*10, ones=a%10;
+        const p1=tens*b, p2=ones*b;
+        return [
+            { prompt:`Step 1 of 3 — What is ${tens} × ${b}?`,
+              answer:p1, choices:_stepChoices(p1),
+              tip:`${tens} × ${b} = ${p1}` },
+            { prompt:`Step 2 of 3 — What is ${ones} × ${b}?`,
+              answer:p2, choices:_stepChoices(p2),
+              tip:`${ones} × ${b} = ${p2}` },
+            { prompt:`Step 3 of 3 — Add the parts: ${p1} + ${p2} = ?`,
+              answer:q.answer, choices:_stepChoices(q.answer),
+              tip:`${p1} + ${p2} = ${q.answer} ✅` },
+        ];
+    }
+
+    // ── Multi-step problems: use existing _step1/_op1/_op2/_c fields ──
+    if(q.opType==='multi' && q._step1!==undefined){
+        const {a,b,_step1,_op1,_op2,_c,answer}=q;
+        const step1Text=_op1==='×'
+            ? `Step 1 of 2 — What is ${a} × ${b}?`
+            : `Step 1 of 2 — What is ${a} + ${b}?`;
+        const step2Text=_op2==='×'
+            ? `Step 2 of 2 — Multiply the result: ${_step1} × ${_c} = ?`
+            : `Step 2 of 2 — Add the extra: ${_step1} + ${_c} = ?`;
+        return [
+            { prompt:step1Text, answer:_step1, choices:_stepChoices(_step1),
+              tip:`${a} ${_op1} ${b} = ${_step1}` },
+            { prompt:step2Text, answer:answer, choices:_stepChoices(answer),
+              tip:`${_step1} ${_op2} ${_c} = ${answer} ✅` },
+        ];
+    }
+
+    return null;
+}
+
 // ── Answer choices (scale spread by answer magnitude) ──
 function makeChoices(answer){
     const pool=new Set([answer]);
