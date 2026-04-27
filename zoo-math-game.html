@@ -587,6 +587,20 @@ body {
   align-items: center;
   gap: 6px;
 }
+/* Subtle exit — present but unadvertised */
+.work-skip {
+  display: block;
+  text-align: right;
+  font-size: .6em;
+  color: #d4d4d4;
+  cursor: pointer;
+  margin-top: 5px;
+  padding: 1px 2px;
+  user-select: none;
+  letter-spacing: .02em;
+}
+.work-skip:hover { color: #aaa; }
+
 /* Lock answer buttons while work panel is active */
 .answers.work-locked .ans-btn {
   opacity: .38;
@@ -1157,6 +1171,12 @@ function _loadWorkPanel(q){
         const op1name=q._op1==='×'?'multiply':'add';
         const op2name=q._op2==='×'?'then multiply':'then add';
         decompHtml=`<div class="work-decomp">Two steps: <b>${op1name}</b> first, <b>${op2name}</b>!</div>`;
+    } else if(q.opType==='sub'){
+        const chunk=q.a>=100&&q.b>=100 ? Math.floor(q.b/100)*100 : Math.floor(q.b/10)*10;
+        const rest=q.b-chunk;
+        decompHtml=`<div class="work-decomp">Break <b>${q.b}</b> apart: subtract <b>${chunk}</b> first, then <b>${rest}</b> more</div>`;
+    } else if(q.opType==='conv'){
+        decompHtml=`<div class="work-decomp">📏 Remember: <b>${q.convFact}</b></div>`;
     }
 
     wp.innerHTML=`
@@ -1167,7 +1187,8 @@ function _loadWorkPanel(q){
             <div class="work-step-choices" id="workStepChoices"></div>
             <div class="work-step-result" id="workStepResult"></div>
         </div>
-        <div class="work-progress" id="workProgress"></div>`;
+        <div class="work-progress" id="workProgress"></div>
+        <span class="work-skip" onclick="_skipWorkPanel()">skip</span>`;
     wp.style.display='';
     _renderWorkStep();
 }
@@ -1233,6 +1254,12 @@ function _workComplete(){
         <div class="work-done-msg">🎉 Great work! Now choose your final answer:</div>
         <div class="work-summary">${lines}</div>`;
     document.getElementById('answers').classList.remove('work-locked');
+}
+
+function _skipWorkPanel(){
+    if(!_wSteps) return;
+    _wIdx=_wSteps.length;
+    _workComplete();
 }
 
 // ─────────────────────────────────────────────────

@@ -266,6 +266,14 @@ function makeConversion(diff){
                 `You're restocking ${kg} kg of ${f} for the enclosure. The container label asks for grams. How many grams?`,
             ]),
             choices:_convChoices(ans, kg*100, kg*10, kg),
+            _ws:[
+                { prompt:'Complete the rule: 1 kg = __ g',
+                  answer:1000, choices:shuffle([1000,100,10000,10]),
+                  tip:'1 kg = 1 000 g' },
+                { prompt:`So ${kg} kg × 1 000 = __ g?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${kg} × 1 000 = ${ans} g ✅` },
+            ],
         });
     }
 
@@ -281,6 +289,14 @@ function makeConversion(diff){
                 `The cleaning team needs ${L} litre${L>1?'s':''} of disinfectant. Their spray bottle shows mL. How many mL?`,
             ]),
             choices:_convChoices(ans, L*100, L*10, L),
+            _ws:[
+                { prompt:'Complete the rule: 1 L = __ mL',
+                  answer:1000, choices:shuffle([1000,100,10000,10]),
+                  tip:'1 L = 1 000 mL' },
+                { prompt:`So ${L} L × 1 000 = __ mL?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${L} × 1 000 = ${ans} mL ✅` },
+            ],
         });
     }
 
@@ -298,6 +314,14 @@ function makeConversion(diff){
                 `A vitamin supplement requires ${mgPerKg} mg per kg of body weight. Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. How many mg in total?`,
             ]),
             choices:_convChoices(ans, wt+mgPerKg, Math.max(1,wt-mgPerKg), mgPerKg*2),
+            _ws:[
+                { prompt:`Identify the dose rate: ___ mg per kg of body weight`,
+                  answer:mgPerKg, choices:_stepChoices(mgPerKg),
+                  tip:`Dose rate = ${mgPerKg} mg per kg` },
+                { prompt:`So for a ${wt} kg animal: ${wt} × ${mgPerKg} = __ mg?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${wt} × ${mgPerKg} = ${ans} mg ✅` },
+            ],
         });
     }
 
@@ -313,6 +337,14 @@ function makeConversion(diff){
                 `A keeper needs ${m} metres of rope for the enrichment area. The rope is sold per centimetre. How many cm?`,
             ]),
             choices:_convChoices(ans, m*1000, m*10, m),
+            _ws:[
+                { prompt:'Complete the rule: 1 m = __ cm',
+                  answer:100, choices:shuffle([100,1000,10,1]),
+                  tip:'1 m = 100 cm' },
+                { prompt:`So ${m} m × 100 = __ cm?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${m} × 100 = ${ans} cm ✅` },
+            ],
         });
     }
 
@@ -328,6 +360,14 @@ function makeConversion(diff){
                 `A keeper spends ${mins} minute${mins>1?'s':''} cleaning each habitat. The log records time in seconds. How many seconds?`,
             ]),
             choices:_convChoices(ans, mins*100, mins*6, mins*12),
+            _ws:[
+                { prompt:'Complete the rule: 1 minute = __ seconds',
+                  answer:60, choices:shuffle([60,100,24,12]),
+                  tip:'1 minute = 60 seconds' },
+                { prompt:`So ${mins} minute${mins>1?'s':''} × 60 = __ seconds?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${mins} × 60 = ${ans} seconds ✅` },
+            ],
         });
     }
 
@@ -344,6 +384,14 @@ function makeConversion(diff){
                 `A painkiller is dosed at 1 g per ${ratio} kg. Your ${cA.e} ${cA.n.slice(0,-1)} weighs ${wt} kg. What is the correct dose in grams?`,
             ]),
             choices:_convChoices(ans, wt*ratio, Math.max(1,ans-1), ans+ratio),
+            _ws:[
+                { prompt:`Identify the dose rate: 1 g for every ___ kg`,
+                  answer:ratio, choices:_stepChoices(ratio),
+                  tip:`1 g per every ${ratio} kg` },
+                { prompt:`So for a ${wt} kg animal: ${wt} ÷ ${ratio} = __ g?`,
+                  answer:ans, choices:_stepChoices(ans),
+                  tip:`${wt} ÷ ${ratio} = ${ans} g ✅` },
+            ],
         });
     }
 
@@ -785,6 +833,40 @@ function makeWorkSteps(q){
               tip:`${_step1} ${_op2} ${_c} = ${answer} ✅` },
         ];
     }
+
+    // ── Subtraction with place-value decomposition ──
+    if(q.opType==='sub' && q.b>=10 && q.a>=20){
+        const a=q.a, b=q.b;
+        // 3-digit: subtract hundreds chunk, then remainder
+        if(a>=100 && b>=100){
+            const hundredsB=Math.floor(b/100)*100, remB=b%100;
+            if(remB===0) return null; // clean hundreds, no scaffolding needed
+            const mid=a-hundredsB;
+            return [
+                { prompt:`Step 1 of 2 — Subtract the hundreds: ${a} − ${hundredsB} = ?`,
+                  answer:mid, choices:_stepChoices(mid),
+                  tip:`${a} − ${hundredsB} = ${mid}` },
+                { prompt:`Step 2 of 2 — Now subtract the rest: ${mid} − ${remB} = ?`,
+                  answer:q.answer, choices:_stepChoices(q.answer),
+                  tip:`${mid} − ${remB} = ${q.answer} ✅` },
+            ];
+        }
+        // 2-digit: subtract tens, then ones
+        const tensB=Math.floor(b/10)*10, onesB=b%10;
+        if(onesB===0) return null; // clean tens, nothing to decompose
+        const mid=a-tensB;
+        return [
+            { prompt:`Step 1 of 2 — Subtract the tens: ${a} − ${tensB} = ?`,
+              answer:mid, choices:_stepChoices(mid),
+              tip:`${a} − ${tensB} = ${mid}` },
+            { prompt:`Step 2 of 2 — Now subtract the ones: ${mid} − ${onesB} = ?`,
+              answer:q.answer, choices:_stepChoices(q.answer),
+              tip:`${mid} − ${onesB} = ${q.answer} ✅` },
+        ];
+    }
+
+    // ── Conversion: steps pre-built in makeConversion() ──
+    if(q.opType==='conv' && q._ws) return q._ws;
 
     return null;
 }
