@@ -446,6 +446,16 @@ body {
 }
 .zoo-animal-walker.sliding .z-bob { animation:ice-slide .85s ease-in-out forwards!important; }
 
+/* ── Sprite sheet animals ── */
+.anim-sprite {
+  display: block;
+  width: 56px; height: 56px;
+  background-repeat: no-repeat;
+  image-rendering: auto;
+  mix-blend-mode: screen;   /* makes black background transparent */
+  flex-shrink: 0;
+  /* background-size and background-position set dynamically by JS */
+}
 /* ── Tap reaction emoji burst ── */
 @keyframes tap-burst {
   0%   { transform:translate(-50%,-50%) scale(.4); opacity:1; }
@@ -1935,6 +1945,17 @@ function buyBuilding(id){
 let _zvActive=false, _zvRunning=false, _zvLastTs=0;
 const _animalWalkers=[], _guestWalkers=[];
 
+// ── Sprite sheet registry ─────────────────────────
+// Add an entry here whenever a walk-cycle PNG is dropped into sprites/.
+// cols × rows = total frames. fps = playback speed.
+// File naming: sprites/{id}-walk.png
+const SPRITE_SHEETS = {
+    giraffe:  { cols:5, rows:5, fps:12 },
+    // lion:     { cols:5, rows:5, fps:12 },
+    // elephant: { cols:5, rows:5, fps:10 },
+    // shark:    { cols:5, rows:5, fps:14 },
+};
+
 const ZV_DECORS={
     // tropical
     flamingo:['🌴','💧'],       monkey:['🌴','🍌'],         macaw:['🌺','🌴'],
@@ -1990,12 +2011,16 @@ function _encHtml(id){
     const [d1,d2]=ZV_DECORS[id]||['🌿','🪨'];
     const num=Math.min(cnt,3);
 
-    // Animal walkers
+    // Animal walkers — sprite sheet if registered, Twemoji fallback otherwise
+    const sheet=SPRITE_SHEETS[id];
+    const innerHtml=sheet
+        ? `<div class="anim-sprite" style="background-image:url('sprites/${id}-walk.png');background-size:${sheet.cols*100}% ${sheet.rows*100}%;background-position:0% 0%"></div>`
+        : spr(a.u,a.emoji,44);
     let walkers='';
     for(let i=0;i<num;i++){
         const delay=(i*0.18).toFixed(2), dur=(0.42+i*0.07).toFixed(2);
         walkers+=`<div class="zoo-animal-walker" data-zid="${id}">
-            <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${spr(a.u,a.emoji,44)}</div>
+            <div class="z-bob" style="animation-delay:${delay}s;animation-duration:${dur}s">${innerHtml}</div>
         </div>`;
     }
 
@@ -2113,7 +2138,16 @@ function _setupAnimalWalkers(){
         const spd=(Math.random()*0.45+0.22)*(i%2===0?1:-1);
         el.style.left=startX+'px';
         el.style.transform=`scaleX(${spd>=0?1:-1})`;
-        _animalWalkers.push({el, x:startX, spd, minX:4, maxX});
+        // Sprite sheet state (null if using Twemoji fallback)
+        const zid=el.dataset.zid;
+        const sh=SPRITE_SHEETS[zid]||null;
+        const spriteEl=sh?el.querySelector('.anim-sprite'):null;
+        _animalWalkers.push({
+            el, x:startX, spd, minX:4, maxX,
+            spriteEl, sh,
+            sFrame: sh ? Math.floor(Math.random()*(sh.cols*sh.rows)) : 0,
+            sTime: 0,
+        });
     });
 }
 
@@ -2250,6 +2284,21 @@ function _zvLoop(ts){
         if(w.x<=w.minX){ w.x=w.minX; w.spd= Math.abs(w.spd); }
         w.el.style.left=w.x+'px';
         w.el.style.transform=`scaleX(${w.spd>=0?1:-1})`;
+        // Advance sprite sheet frame
+        if(w.spriteEl && w.sh){
+            w.sTime+=dt;
+            const frameDur=1000/w.sh.fps;
+            if(w.sTime>=frameDur){
+                w.sTime-=frameDur;
+                w.sFrame=(w.sFrame+1)%(w.sh.cols*w.sh.rows);
+                const col=w.sFrame%w.sh.cols;
+                const row=Math.floor(w.sFrame/w.sh.cols);
+                // Percentage positioning — works at any image resolution
+                const xp=w.sh.cols>1 ? (col/(w.sh.cols-1)*100).toFixed(1) : 0;
+                const yp=w.sh.rows>1 ? (row/(w.sh.rows-1)*100).toFixed(1) : 0;
+                w.spriteEl.style.backgroundPosition=`${xp}% ${yp}%`;
+            }
+        }
     });
 
     const path=document.getElementById('zvGuestPath');

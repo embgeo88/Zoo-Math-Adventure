@@ -1,6 +1,6 @@
 // Zoo Math Adventure — Service Worker
 // Bump CACHE_NAME whenever files change to force a refresh on all devices
-const CACHE_NAME = 'zoo-math-v2';
+const CACHE_NAME = 'zoo-math-v3';
 
 // All local files the game needs — pre-cached on install so the game works offline immediately
 const PRECACHE = [
@@ -21,6 +21,8 @@ const PRECACHE = [
   './sprites/wombat.svg',
   './icons/icon.svg',
   './manifest.json',
+  // Walk-cycle sprite sheets — add one line per animal as PNGs arrive
+  './sprites/giraffe-walk.png',
 ];
 
 // Twemoji CDN — cached at runtime the first time each image loads,
