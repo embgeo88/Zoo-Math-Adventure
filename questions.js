@@ -689,13 +689,11 @@ function pickOp(){
     const diff=getLevelDifficulty();
     // User's selected ops are always honoured — activeOps is the primary pool
     const pool=[...S.activeOps];
-    // Automatically add division at higher difficulties (not user-toggleable)
-    if(diff>=3 && !pool.includes('div')){ pool.push('div'); }
-    if(diff>=4 && !pool.includes('div')){ pool.push('div'); } // extra weight at diff 4
-    // Conversion questions auto-added at diff 2+
+    // Conversion questions auto-added at diff 2+ (no dedicated toggle needed)
     if(diff>=2){ pool.push('conv'); }
     // Fractions auto-added at diff 3+ (user can also toggle on earlier)
     if(diff>=3 && !pool.includes('frac')){ pool.push('frac'); }
+    // Division and multi-step: opt-in only via their toggle buttons
     // Multi-step: opt-in only via toggle (stays user-controlled)
     if(!pool.length) pool.push('add'); // safety fallback
 

@@ -659,6 +659,7 @@ body {
         <button class="op-btn" data-op="add"   onclick="toggleOp('add')">➕<br>Addition</button>
         <button class="op-btn" data-op="sub"   onclick="toggleOp('sub')">➖<br>Subtraction</button>
         <button class="op-btn" data-op="mul"   onclick="toggleOp('mul')">✖️<br>Times Tables</button>
+        <button class="op-btn op-off" data-op="div"   onclick="toggleOp('div')">➗<br>Division</button>
         <button class="op-btn op-off" data-op="frac"  onclick="toggleOp('frac')">½<br>Fractions</button>
         <button class="op-btn op-off" data-op="multi" onclick="toggleOp('multi')">🔢<br>Multi-step</button>
     </div>
@@ -1425,7 +1426,7 @@ function toggleConvGuide(){
     const body=document.getElementById('convGuideBody');
     const toggle=document.getElementById('convGuideToggle');
     const open=body.style.display!=='none';
-    body.style.display=open?'none':'';
+    body.style.display=open?'none':'block';
     toggle.textContent=open?'📏 Conversion Guide ▸':'📏 Conversion Guide ▾';
     toggle.classList.toggle('open',!open);
 }
