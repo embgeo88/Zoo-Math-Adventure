@@ -169,11 +169,13 @@ body {
 @keyframes mfl { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-90px) scale(1.4)} }
 
 /* ── Op Picker ── */
-.op-picker { display: flex; gap: 8px; margin-bottom: 12px; }
-.op-btn { flex: 1; padding: 10px 4px; border: 3px solid; border-radius: 16px; font-size: .82em; font-family: inherit; font-weight: 900; cursor: pointer; transition: all .2s; text-align: center; line-height: 1.35; background: transparent; }
+.op-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.op-btn { flex: 1; min-width: 68px; padding: 9px 4px; border: 3px solid; border-radius: 16px; font-size: .78em; font-family: inherit; font-weight: 900; cursor: pointer; transition: all .2s; text-align: center; line-height: 1.35; background: transparent; }
 .op-btn[data-op="add"]   { border-color: #4caf50; background: #e8f5e9; color: #1b5e20; }
 .op-btn[data-op="sub"]   { border-color: #2196f3; background: #e3f2fd; color: #0d47a1; }
 .op-btn[data-op="mul"]   { border-color: #ff9800; background: #fff3e0; color: #e65100; }
+.op-btn[data-op="div"]   { border-color: #e53935; background: #ffebee; color: #b71c1c; }
+.op-btn[data-op="conv"]  { border-color: #0097a7; background: #e0f7fa; color: #006064; }
 .op-btn[data-op="frac"]  { border-color: #9c27b0; background: #f3e5f5; color: #4a148c; }
 .op-btn[data-op="multi"] { border-color: #00897b; background: #e0f2f1; color: #004d40; }
 .op-btn.op-off { opacity: .35; filter: grayscale(80%); }
@@ -660,6 +662,7 @@ body {
         <button class="op-btn" data-op="sub"   onclick="toggleOp('sub')">➖<br>Subtraction</button>
         <button class="op-btn" data-op="mul"   onclick="toggleOp('mul')">✖️<br>Times Tables</button>
         <button class="op-btn op-off" data-op="div"   onclick="toggleOp('div')">➗<br>Division</button>
+        <button class="op-btn op-off" data-op="conv"  onclick="toggleOp('conv')">🔄<br>Conversion</button>
         <button class="op-btn op-off" data-op="frac"  onclick="toggleOp('frac')">½<br>Fractions</button>
         <button class="op-btn op-off" data-op="multi" onclick="toggleOp('multi')">🔢<br>Multi-step</button>
     </div>
@@ -1025,7 +1028,7 @@ const S = {
     answered: false,
     question: null,
     qCount: 0,
-    CYCLE: 5,
+    CYCLE: 15,
     // Adaptive learning
     recentWrong: [],    // sliding window (max 8) of recently wrong opTypes
     practiceType: null, // if set, next questions force this op type

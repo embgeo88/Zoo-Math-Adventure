@@ -683,18 +683,12 @@ function pickOp(){
     // If in forced practice, return that type (only if it's still active)
     if(S.practiceLeft>0){
         S.practiceLeft--;
-        if(S.activeOps.includes(S.practiceType)||S.practiceType==='div') return S.practiceType;
+        if(S.activeOps.includes(S.practiceType)) return S.practiceType;
     }
 
-    const diff=getLevelDifficulty();
-    // User's selected ops are always honoured — activeOps is the primary pool
+    // All op types are user-controlled via toggle buttons — nothing is auto-added.
+    // This guarantees "Times Tables only" always means ONLY times tables, etc.
     const pool=[...S.activeOps];
-    // Conversion questions auto-added at diff 2+ (no dedicated toggle needed)
-    if(diff>=2){ pool.push('conv'); }
-    // Fractions auto-added at diff 3+ (user can also toggle on earlier)
-    if(diff>=3 && !pool.includes('frac')){ pool.push('frac'); }
-    // Division and multi-step: opt-in only via their toggle buttons
-    // Multi-step: opt-in only via toggle (stays user-controlled)
     if(!pool.length) pool.push('add'); // safety fallback
 
     // Adaptive weighting: push recently-wrong ops to practise more
