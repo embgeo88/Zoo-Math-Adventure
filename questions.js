@@ -498,7 +498,10 @@ function makeChallenge(){
         });
     }
 
-    return pool.length>0 ? pick(pool) : null;
+    // Only offer scenarios whose op type the player has currently enabled.
+    // This ensures "Subtraction only" never triggers a division emergency, etc.
+    const filtered=pool.filter(q=>S.activeOps.includes(q.opType));
+    return filtered.length>0 ? pick(filtered) : null;
 }
 
 // ── Hint generator — called on wrong answer ──
@@ -716,9 +719,9 @@ function generateQuestion(){
             if(ch) return ch;
         }
     }
-    // Economy question (player has animals, difficulty 2+)
+    // Economy question (player has animals, difficulty 2+, mul must be active)
     const diff=getLevelDifficulty();
-    if(Object.keys(S.animals).length>0 && diff>=2 && Math.random()<.12){
+    if(Object.keys(S.animals).length>0 && diff>=2 && S.activeOps.includes('mul') && Math.random()<.12){
         const eq=makeEcon(); if(eq) return eq;
     }
 
