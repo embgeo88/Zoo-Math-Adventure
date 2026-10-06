@@ -89,6 +89,16 @@ body {
 .conv-guide-toggle:hover { background:#c8e6c9; }
 .conv-guide-toggle.open { border-radius:12px 12px 0 0; }
 .conv-guide-body { background:#f1f8e9; border:2px solid #81c784; border-top:none; border-radius:0 0 12px 12px; padding:10px 14px 12px; display:none; }
+/* ── Bar model guide (Singapore math for emergencies) ── */
+.bar-guide { margin: 10px 0 6px; }
+.bar-guide-toggle { width:100%; text-align:left; background:#fff3e0; border:2px solid #ffb74d; border-radius:12px; padding:8px 14px; font-family:Nunito,cursive; font-weight:900; font-size:.88em; color:#e65100; cursor:pointer; transition:background .15s; }
+.bar-guide-toggle:hover { background:#ffe0b2; }
+.bar-guide-toggle.open { border-radius:12px 12px 0 0; }
+.bar-guide-body { background:#fffaf0; border:2px solid #ffb74d; border-top:none; border-radius:0 0 12px 12px; padding:10px 14px 12px; display:none; text-align:center; }
+/* ── Strategy chip & mastery stars ── */
+.strategy-chip { display:inline-block; margin:4px 0 8px; background:#e3f2fd; border:2px solid #64b5f6; border-radius:20px; padding:3px 12px; font-size:.78em; color:#0d47a1; }
+.mastery-stars { font-size:.72em; color:#ffb300; letter-spacing:2px; line-height:1.7; }
+.op-btn.op-off .mastery-stars { color:#cfcfcf; }
 .conv-guide-body table { width:100%; border-collapse:collapse; font-size:.82em; }
 .conv-guide-body td { padding:5px 8px; border-bottom:1px solid #c5e1a5; vertical-align:top; }
 .conv-guide-body tr:last-child td { border-bottom:none; }
@@ -252,6 +262,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .z-bob { animation: none !important; }
 }
+/* ── Streak flame tiers ── */
+.stat-badge.hot1{border-color:#ff9800;box-shadow:0 0 8px rgba(255,152,0,.5);}
+.stat-badge.hot2{border-color:#ff6d00;box-shadow:0 0 12px rgba(255,109,0,.65);animation:flamePulse .8s ease-in-out infinite;}
+.stat-badge.hot3{border-color:#e64a19;background:linear-gradient(135deg,#fff3e0,#ffe0b2);box-shadow:0 0 16px rgba(230,74,25,.8);animation:flamePulse .55s ease-in-out infinite;}
+@keyframes flamePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+/* ── Confetti ── */
+.confetti-bit{position:fixed;top:-12px;width:9px;height:14px;z-index:10000;pointer-events:none;animation-name:confFall;animation-timing-function:linear;animation-fill-mode:forwards;}
+@keyframes confFall{to{transform:translateY(108vh) rotate(720deg);opacity:.85;}}
+@media (prefers-reduced-motion: reduce){ .confetti-bit{display:none;} .stat-badge.hot2,.stat-badge.hot3{animation:none;} }
 
 .zv-path-wrap { background: linear-gradient(180deg,#66bb6a,#43a047); padding: 5px 10px 12px; }
 .zv-path { position: relative; height: 56px; background: linear-gradient(180deg,#d7ccc8,#bcaaa4); border-radius: 8px; border: 2px solid #a1887f; overflow: hidden; }
@@ -676,6 +695,7 @@ body {
         <div class="stat-badge" id="moneyBadge">💰 $75</div>
         <div class="stat-badge" id="scoreBadge">⭐ Score: 0</div>
         <div class="stat-badge" id="streakBadge">🔥 Streak: 0</div>
+        <div class="stat-badge" id="ttsBadge" onclick="toggleTTS()" title="Read questions aloud">🔊</div>
         <div class="stat-badge lvl-badge" id="levelBadge">Zookeeper Trainee</div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
@@ -724,6 +744,10 @@ body {
                     <tr><td>Medicine dose (g)</td><td>= 1 g ÷ kg-per-dose × body weight in kg</td></tr>
                 </table>
             </div>
+        </div>
+        <div class="bar-guide" id="barGuide" style="display:none">
+            <button class="bar-guide-toggle" id="barGuideToggle" onclick="toggleBarGuide()">📊 Bar Model ▸</button>
+            <div class="bar-guide-body" id="barGuideBody"></div>
         </div>
         <div id="workPanel" style="display:none"></div>
         <div class="answers" id="answers"></div>
@@ -1049,7 +1073,7 @@ const LEVELS = [
 // Earnings per correct answer, one entry per level
 const EARN   = [5, 6, 7, 8, 9, 10, 12, 14, 17, 20];
 // Streak bonuses [3-streak, 5-streak] per level
-const SBONUS = [[1,3],[2,3],[2,4],[2,4],[3,5],[3,5],[3,5],[4,6],[4,6],[5,8]];
+const SBONUS = [[1,2],[1,2],[1,2],[1,2],[2,3],[2,3],[2,3],[2,3],[2,3],[3,4]];
 
 // ─────────────────────────────────────────────────
 //  STATE
@@ -1099,21 +1123,22 @@ const S = {
     matchBest: 0,
     // Quests (persisted)
     quests: [
-        { id:'q_10',     title:'First 10 Correct',    desc:'Answer 10 questions correctly',               reward:30,             completed:false },
-        { id:'q_streak5',title:'On Fire! 🔥',          desc:'Build a streak of 5 correct in a row',        reward:40,             completed:false },
-        { id:'q_3ani',   title:'Zoo Builder',          desc:'Own 3 different animal species',              reward:50,             completed:false },
-        { id:'q_lvl3',   title:'Rising Zookeeper',     desc:'Reach Level 3',                               reward:60,             completed:false },
-        { id:'q_500',    title:'$500 Earned',          desc:'Earn $500 in total zoo income',               reward:75,             completed:false },
-        { id:'q_conv20', title:'Zoo Scientist 🔬',     desc:'Answer 20 conversion questions correctly',    reward:80,             completed:false },
-        { id:'q_frac10', title:'Fraction Master ½',    desc:'Answer 10 fraction questions correctly',      reward:60,             completed:false },
-        { id:'q_multi10',title:'Problem Solver 🔢',    desc:'Answer 10 multi-step questions correctly',    reward:90,             completed:false },
-        { id:'q_lvl5',   title:'Head Zookeeper',       desc:'Reach Level 5',                               reward:100,            completed:false },
+        { id:'q_10',     title:'First 10 Correct',    desc:'Answer 10 questions correctly',               reward:15,             completed:false },
+        { id:'q_streak5',title:'On Fire! 🔥',          desc:'Build a streak of 5 correct in a row',        reward:20,             completed:false },
+        { id:'q_3ani',   title:'Zoo Builder',          desc:'Own 3 different animal species',              reward:25,             completed:false },
+        { id:'q_lvl3',   title:'Rising Zookeeper',     desc:'Reach Level 3',                               reward:30,             completed:false },
+        { id:'q_500',    title:'$500 Earned',          desc:'Earn $500 in total zoo income',               reward:40,             completed:false },
+        { id:'q_conv20', title:'Zoo Scientist 🔬',     desc:'Answer 20 conversion questions correctly',    reward:40,             completed:false },
+        { id:'q_frac10', title:'Fraction Master ½',    desc:'Answer 10 fraction questions correctly',      reward:30,             completed:false },
+        { id:'q_multi10',title:'Problem Solver 🔢',    desc:'Answer 10 multi-step questions correctly',    reward:45,             completed:false },
+        { id:'q_lvl5',   title:'Head Zookeeper',       desc:'Reach Level 5',                               reward:50,            completed:false },
     ],
     activeQuest: 0,
     convCorrect:  0,   // lifetime conversion correct (for quest)
     fracCorrect:  0,   // lifetime fraction correct
     multiCorrect: 0,   // lifetime multi-step correct
     recentStreaks: [],  // last 10 streak lengths (for sparkline)
+    opCorrect: {},      // lifetime correct per opType (for mastery stars)
 };
 
 // Session stats — reset every page load, never persisted
@@ -1129,15 +1154,74 @@ const SESSION = {
 // ─────────────────────────────────────────────────
 //  SPRITE HELPER
 // ─────────────────────────────────────────────────
-function spr(u, emoji, size=72) {
+function spr(u, emoji, size=72, move=null) {
     // u values prefixed with 'custom:' point to local SVG sprites for animals with no accurate emoji
+    // move: optional ANIMAL_MOVE archetype — animates the sprite with the matching mv-* keyframes
     const src = u.startsWith('custom:') ? u.slice(7) : `${TW}${u}.svg`;
     const fb=Math.round(size*.85);
-    return `<div style="width:${size}px;height:${size}px;margin:0 auto;display:flex;align-items:center;justify-content:center">
+    let cls='', dur='';
+    if(move){
+        cls=' class="z-bob mv-'+move+'"';
+        let h=0; for(const c of emoji) h=(h*31+c.codePointAt(0))>>>0;  // deterministic per-animal timing
+        dur=`;animation-duration:${(0.48+(h%5)*0.07).toFixed(2)}s`;
+    }
+    return `<div${cls} style="width:${size}px;height:${size}px;margin:0 auto;display:flex;align-items:center;justify-content:center${dur}">
         <img class="spr" src="${src}" width="${size}" height="${size}" alt="${emoji}"
             onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block'">
         <span class="spr-fb" style="font-size:${fb}px;display:none">${emoji}</span>
     </div>`;
+}
+
+// ─────────────────────────────────────────────────
+//  READ-ALOUD (Web Speech API — no assets needed)
+// ─────────────────────────────────────────────────
+let _ttsOn = (localStorage.getItem('zoo_tts') ?? '1') === '1';
+function _cleanForTTS(t){
+    return t.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}★☆]/gu,'')
+            .replace(/\s+/g,' ').trim();
+}
+function speakQuestion(text){
+    if(!_ttsOn) return;
+    try{
+        if(!('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const clean=_cleanForTTS(text);
+        if(!clean) return;
+        const u=new SpeechSynthesisUtterance(clean);
+        u.rate=0.95; u.pitch=1.05;
+        speechSynthesis.speak(u);
+    }catch(e){/* TTS unavailable — game works fine without it */}
+}
+function stopSpeak(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
+function toggleTTS(){
+    _ttsOn=!_ttsOn;
+    try{ localStorage.setItem('zoo_tts', _ttsOn?'1':'0'); }catch(e){}
+    if(!_ttsOn) stopSpeak();
+    syncTTSBadge();
+}
+function syncTTSBadge(){
+    const b=document.getElementById('ttsBadge');
+    if(b){ b.textContent=_ttsOn?'🔊':'🔇'; b.style.opacity=_ttsOn?'1':'0.55'; }
+}
+
+// ─────────────────────────────────────────────────
+//  CONFETTI (milestone celebrations)
+// ─────────────────────────────────────────────────
+function confettiBurst(n){
+    try{
+        if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const colors=['#ff7043','#ffd740','#66bb6a','#42a5f5','#ab47bc','#ec407a','#26c6da'];
+        for(let i=0;i<n;i++){
+            const d=document.createElement('div');
+            d.className='confetti-bit';
+            d.style.left=(Math.random()*100)+'vw';
+            d.style.background=colors[i%colors.length];
+            d.style.animationDuration=(1.6+Math.random()*1.2).toFixed(2)+'s';
+            if(Math.random()<0.4) d.style.borderRadius='50%';
+            document.body.appendChild(d);
+            setTimeout(()=>d.remove(),3200);
+        }
+    }catch(e){}
 }
 
 // ─────────────────────────────────────────────────
@@ -1431,6 +1515,7 @@ function loadQuestion(){
     tag.className='q-tag'+(q.isChallenge?' emergency':q.tag.includes('★')?' hard':'');
 
     document.getElementById('qText').textContent=q.text;
+    speakQuestion(q.text);
     document.getElementById('hintBox').className='hint-box';
     document.getElementById('feedback').className='feedback';
     document.getElementById('miscBox').className='misc-box';
@@ -1450,6 +1535,20 @@ function loadQuestion(){
         cg.style.display='none';
     }
 
+    // Bar model guide for emergencies — always collapsed so the challenge stays
+    const bmg=document.getElementById('barGuide');
+    const bmgBody=document.getElementById('barGuideBody');
+    const bmgToggle=document.getElementById('barGuideToggle');
+    if(q.isChallenge && ['add','sub','mul','div'].includes(q.opType)){
+        bmg.style.display='block';
+        bmgBody.style.display='none';
+        bmgBody.innerHTML=barModelSVG(q);
+        bmgToggle.textContent='📊 Bar Model ▸';
+        bmgToggle.classList.remove('open');
+    } else {
+        bmg.style.display='none';
+    }
+
     const grid=document.getElementById('answers');
     grid.innerHTML='';
     choices.forEach(val=>{
@@ -1459,6 +1558,45 @@ function loadQuestion(){
         grid.appendChild(btn);
     });
     _loadWorkPanel(q);  // Show step-by-step work panel (mul 2-digit & multi-step only)
+}
+
+// ── Bar models (Singapore math) for emergency scenarios ──
+// q carries opType, a, b, answer. Collapsed by default so the challenge stays.
+function barModelSVG(q){
+    const W=240, H=66, pad=10, innerW=W-pad*2;
+    const seg=(x,w,label,fill)=>{
+        w=Math.max(w,4);
+        return `<rect x="${x.toFixed(1)}" y="20" width="${w.toFixed(1)}" height="26" rx="6" fill="${fill}" stroke="#5d4037" stroke-width="2"/>`
+            + `<text x="${(x+w/2).toFixed(1)}" y="38" text-anchor="middle" font-size="13" font-weight="900" fill="#3e2723">${label}</text>`;
+    };
+    const cap=`<text x="${W/2}" y="60" text-anchor="middle" font-size="12" font-weight="700"`;
+    let inner='', op=q.opType;
+    if(op==='add'){
+        const tot=q.a+q.b, w1=innerW*q.a/tot;
+        inner=seg(pad,w1,q.a,'#c8e6c9')+seg(pad+w1,innerW-w1,q.b,'#a5d6a7')
+            + cap+` fill="#2e7d32">? = ${q.a} + ${q.b}</text>`;
+    }else if(op==='sub'){
+        const w1=Math.min(innerW-26, innerW*q.b/Math.max(q.a,1));
+        inner=seg(pad,w1,q.b,'#ffccbc')+seg(pad+w1,innerW-w1,'?','#fff3e0')
+            + `<text x="${W/2}" y="13" text-anchor="middle" font-size="12" font-weight="700" fill="#bf360c">${q.a} in total</text>`;
+    }else if(op==='mul'){
+        const n=Math.max(q.b,1), shown=Math.min(n,10), sw=innerW/Math.min(n,10);
+        for(let i=0;i<shown;i++) inner+=seg(pad+i*sw,sw-2,q.a,i%2?'#bbdefb':'#90caf9');
+        inner+= cap+` fill="#0d47a1">${n} group${n>1?'s':''} of ${q.a} = ?${n>10?' (showing 10)':''}</text>`;
+    }else if(op==='div'){
+        const n=Math.max(q.b,1), sw=innerW/n;
+        for(let i=0;i<n;i++) inner+=seg(pad+i*sw,sw-2,'?',i%2?'#ffe0b2':'#ffcc80');
+        inner+=`<text x="${W/2}" y="13" text-anchor="middle" font-size="12" font-weight="700" fill="#e65100">${q.a} split into ${n} equal parts</text>`;
+    }else return '';
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="max-width:100%;height:auto" role="img" aria-label="Bar model">${inner}</svg>`;
+}
+function toggleBarGuide(){
+    const body=document.getElementById('barGuideBody');
+    const toggle=document.getElementById('barGuideToggle');
+    const open=body.style.display!=='none';
+    body.style.display=open?'none':'block';
+    toggle.textContent=open?'📊 Bar Model ▸':'📊 Bar Model ▾';
+    toggle.classList.toggle('open',!open);
 }
 
 function toggleConvGuide(){
@@ -1472,6 +1610,7 @@ function toggleConvGuide(){
 
 function checkAnswer(chosen, btn){
     if(S.answered) return;
+    stopSpeak();
     S.answered=true;
     document.querySelectorAll('.ans-btn').forEach(b=>b.style.pointerEvents='none');
     const q=S.question, fb=document.getElementById('feedback'), hb=document.getElementById('hintBox');
@@ -1483,7 +1622,7 @@ function checkAnswer(chosen, btn){
         S.money=Math.max(0, S.money-cost);
         if(correct){
             btn.classList.add('correct');
-            S.streak++; S.correctCount++; S.emergencyWins++;
+            S.streak++; S.correctCount++; trackMastery(q.opType); S.emergencyWins++;
             if(S.streak>S.bestStreak) S.bestStreak=S.streak;
             SESSION.correctByOp[q.opType]=(SESSION.correctByOp[q.opType]||0)+1;
             if(S.streak>SESSION.streakHigh) SESSION.streakHigh=S.streak;
@@ -1509,7 +1648,7 @@ function checkAnswer(chosen, btn){
         // ── Normal question outcome ──
         if(correct){
             btn.classList.add('correct');
-            S.streak++; S.correctCount++;
+            S.streak++; S.correctCount++; trackMastery(q.opType);
             // Per-type lifetime counters (for quests)
             if(q.opType==='conv')  S.convCorrect =(S.convCorrect ||0)+1;
             if(q.opType==='frac')  S.fracCorrect =(S.fracCorrect ||0)+1;
@@ -1518,7 +1657,7 @@ function checkAnswer(chosen, btn){
             SESSION.correctByOp[q.opType]=(SESSION.correctByOp[q.opType]||0)+1;
             SESSION.questionsAnswered++;
             // Tier-based earnings: easy=$6, medium=$12, hard 3-digit=$18
-            const tierBase=[0,6,12,18];
+            const tierBase=[0,3,6,9];
             const base=tierBase[q.earnTier||1];
             const lv=S.level-1;
             const sb=SBONUS[Math.min(lv,SBONUS.length-1)];
@@ -1550,7 +1689,7 @@ function checkAnswer(chosen, btn){
             document.querySelectorAll('.ans-btn').forEach(b=>{ if(parseInt(b.dataset.val)===q.answer) b.classList.add('correct'); });
             if(S.streak>0){ S.recentStreaks.push(S.streak); if(S.recentStreaks.length>10) S.recentStreaks.shift(); }
             S.streak=0;
-            const tierBase=[0,6,12,18];
+            const tierBase=[0,3,6,9];
             const penalty=tierBase[q.earnTier||1];
             S.money=Math.max(0, S.money-penalty);
             S.score=Math.max(0, S.score-penalty);
@@ -1569,6 +1708,7 @@ function checkAnswer(chosen, btn){
         }
     }
 
+    if(correct && S.streak>=5 && S.streak%5===0) confettiBurst(24+Math.min(40,S.streak*2));
     S.qCount++;
     updateUI();
     document.getElementById('nextBtn').className='next-btn show';
@@ -1580,11 +1720,20 @@ function showHint(q, hb, isCorrect=false){
     const h=makeHint(q);
     if(!h){ hb.className='hint-box'; return; }
     const label=isCorrect ? "💡 Here's how it works!" : '💡 HINT';
-    let html=`<div class="hint-label">${label}</div>${h.text}`;
+    let html=`<div class="hint-label">${label}</div>`;
+    if(h.strategy) html+=`<div class="strategy-chip">🌟 Strategy: <b>${h.strategy}</b></div>`;
+    html+=h.text;
     if(h.work) html+=`<div style="text-align:center;margin-top:8px"><div class="workthrough">${h.work}</div></div>`;
     if(h.extra) html+=h.extra;
     hb.innerHTML=html;
     hb.className=isCorrect ? 'hint-box show correct-hint' : 'hint-box show';
+}
+
+function trackMastery(opType){
+    if(!opType||opType==='econ') return;
+    S.opCorrect=S.opCorrect||{};
+    S.opCorrect[opType]=(S.opCorrect[opType]||0)+1;
+    renderOpPicker();  // refresh mastery stars
 }
 
 function trackWrong(opType){
@@ -1618,10 +1767,24 @@ function toggleOp(op){
     loadQuestion();
     S.nextChallenge=savedNc; S.diffSlot=savedDs;
 }
+// Mastery stars: 25 correct = ★, 60 = ★★, 120 = ★★★ (cosmetic only, never gates)
+const OP_META={
+    add:['➕','Addition'], sub:['➖','Subtraction'], mul:['✖️','Times Tables'],
+    div:['➗','Division'], conv:['🔄','Conversion'], frac:['½','Fractions'],
+    multi:['🔢','Multi-step'],
+};
+function masteryStars(op){
+    const n=(S.opCorrect&&S.opCorrect[op])||0;
+    const s=n>=120?3:n>=60?2:n>=25?1:0;
+    return '★'.repeat(s)+'☆'.repeat(3-s);
+}
 function renderOpPicker(){
     document.querySelectorAll('.op-btn').forEach(btn=>{
-        const on=S.activeOps.includes(btn.dataset.op);
+        const op=btn.dataset.op;
+        const on=S.activeOps.includes(op);
         btn.classList.toggle('op-off',!on);
+        const meta=OP_META[op]||['🔢',op];
+        btn.innerHTML=`${meta[0]}<br>${meta[1]}<br><span class="mastery-stars">${masteryStars(op)}</span>`;
     });
 }
 
@@ -1660,6 +1823,7 @@ function showBadgeToast(a){
     e.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#ffd740,#ff6d00);color:#fff;padding:18px 34px;border-radius:22px;font-family:Nunito,cursive;font-weight:900;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none';
     e.innerHTML=`🏅 Badge Earned!<br><span style="font-size:2em;line-height:1.6">${a.emoji}</span><br><span style="font-size:.85em">${a.name}</span>`;
     document.body.appendChild(e);
+    confettiBurst(28);
     requestAnimationFrame(()=>{ e.style.transform='translate(-50%,-50%) scale(1)'; });
     setTimeout(()=>{ e.style.transform='translate(-50%,-50%) scale(0)'; setTimeout(()=>e.remove(),500); },2500);
 }
@@ -1672,6 +1836,7 @@ function checkLevelUp(){
         const b=document.getElementById('lvlup');
         b.innerHTML=`🎊 Level Up! 🎊<br><span style="font-size:.55em">${LEVELS[S.level-1].label}</span>`;
         b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),2800);
+        confettiBurst(40);
     }
 }
 
@@ -1731,7 +1896,11 @@ function closeCycle(){ document.getElementById('cycleBanner').classList.remove('
 function updateUI(){
     document.getElementById('moneyBadge').textContent  =`💰 $${S.money}`;
     document.getElementById('scoreBadge').textContent  =`⭐ ${S.correctCount} correct`;
-    document.getElementById('streakBadge').textContent =`🔥 Streak: ${S.streak}`;
+    const _sb=document.getElementById('streakBadge');
+    _sb.textContent =`🔥 Streak: ${S.streak}`;
+    _sb.classList.toggle('hot1',S.streak>=3&&S.streak<5);
+    _sb.classList.toggle('hot2',S.streak>=5&&S.streak<10);
+    _sb.classList.toggle('hot3',S.streak>=10);
     document.getElementById('levelBadge').textContent  =LEVELS[S.level-1].label;
     // Progress = how far through the 50-answer band for this level
     const pct=S.level>=LEVELS.length ? 100
@@ -1832,7 +2001,7 @@ function renderShop(){
             const r=RARITY[a.rarity], owned=S.animals[a.id]||0, can=S.money>=a.cost;
             shopHtml+=`<div class="shop-card${can?'':' cant-afford'}" onclick="buyAnimal('${a.id}')">
                 ${owned?`<div class="owned-badge">${owned}</div>`:''}
-                ${spr(a.u,a.emoji,72)}
+                ${spr(a.u,a.emoji,72,ANIMAL_MOVE[a.id]||'breathe')}
                 <div class="animal-name">${a.name}</div>
                 <span class="rarity-pill" style="background:${r.color};color:${r.text}" title="${r.tip}">${r.label}</span>
                 <div class="mass-info">⚖️ ${a.kg} · ${MASS[a.mass].label}</div>
@@ -2876,6 +3045,7 @@ function saveGame(){
             quests:S.quests, activeQuest:S.activeQuest,
             convCorrect:S.convCorrect||0, fracCorrect:S.fracCorrect||0, multiCorrect:S.multiCorrect||0,
             recentStreaks:S.recentStreaks||[],
+            opCorrect:S.opCorrect||{},
         };
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     }catch(e){}
@@ -3174,8 +3344,8 @@ function answerMatch(chosen){
     const q = MG.questions[MG.current];
     const correct = chosen === q.correct;
 
-    if(correct){ MG.correct++; S.money += 5; S.totalEarned += 5; spawnFloat(5,'#2e7d32'); }
-    else        { MG.wrong++;  S.money = Math.max(0, S.money - 2); spawnFloat(-2,'#c62828'); }
+    if(correct){ MG.correct++; S.money += 3; S.totalEarned += 3; spawnFloat(3,'#2e7d32'); }
+    else        { MG.wrong++;  S.money = Math.max(0, S.money - 1); spawnFloat(-1,'#c62828'); }
     updateUI();
 
     // Highlight buttons
@@ -3204,13 +3374,13 @@ function _showMatchResult(){
     const c = MG.correct, w = MG.wrong;
     const pct = Math.round((c/10)*100);
     let bonus = 0, bonusLabel = '';
-    if(c === 10){ bonus = 100; bonusLabel = '⭐ Perfect 10/10! +$100 bonus!'; }
-    else if(c === 9){ bonus = 75; bonusLabel = '🏆 9 out of 10! +$75 bonus!'; }
-    else if(c >= 8){ bonus = 50; bonusLabel = '🏅 80%+ accuracy! +$50 bonus!'; }
+    if(c === 10){ bonus = 50; bonusLabel = '⭐ Perfect 10/10! +$50 bonus!'; }
+    else if(c === 9){ bonus = 40; bonusLabel = '🏆 9 out of 10! +$40 bonus!'; }
+    else if(c >= 8){ bonus = 25; bonusLabel = '🏅 80%+ accuracy! +$25 bonus!'; }
 
     if(bonus){ S.money += bonus; S.totalEarned += bonus; updateUI(); spawnFloat(bonus,'#ff6d00'); }
 
-    const net = c*5 - w*2 + bonus;
+    const net = c*3 - w*1 + bonus;
     const icon = c>=9 ? '🎉' : c>=7 ? '👍' : c>=5 ? '🙂' : '💪';
     const wrap = document.getElementById('tab-match');
     wrap.innerHTML = `<div class="match-panel">
@@ -3272,16 +3442,16 @@ function submitDragMatch(){
     MDG.questions.forEach((q, li) => {
         const ri = MDG.leftToRight[li];
         const matched = ri !== undefined && MDG.rightItems[ri] === q.correct;
-        if(matched){ MDG.correct++; S.money += 5; S.totalEarned += 5; spawnFloat(5,'#2e7d32'); }
-        else        { MDG.wrong++;  S.money = Math.max(0, S.money-2); spawnFloat(-2,'#c62828'); }
+        if(matched){ MDG.correct++; S.money += 3; S.totalEarned += 3; spawnFloat(3,'#2e7d32'); }
+        else        { MDG.wrong++;  S.money = Math.max(0, S.money-1); spawnFloat(-1,'#c62828'); }
     });
     let bonus = 0;
-    if(MDG.correct===10)     bonus = 100;
-    else if(MDG.correct===9) bonus = 75;
-    else if(MDG.correct>=8)  bonus = 50;
+    if(MDG.correct===10)     bonus = 50;
+    else if(MDG.correct===9) bonus = 40;
+    else if(MDG.correct>=8)  bonus = 25;
     if(bonus){ S.money += bonus; S.totalEarned += bonus; spawnFloat(bonus,'#f57f17'); }
     MDG.bonus = bonus;
-    MDG.net = MDG.correct*5 - MDG.wrong*2 + bonus;
+    MDG.net = MDG.correct*3 - MDG.wrong*1 + bonus;
     if(!S.matchBest || MDG.correct > S.matchBest) S.matchBest = MDG.correct;
     updateUI();
     renderMatch();
@@ -3386,6 +3556,7 @@ const _hasSave=loadGame();
 renderOpPicker();
 loadQuestion();
 updateUI();
+syncTTSBadge();
 updateQuestBanner();
 _updateHdrAvatar();
 if(_hasSave) setTimeout(()=>showToast('🎉 Welcome back! Your zoo progress was restored.'),400);
