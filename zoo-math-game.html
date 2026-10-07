@@ -99,6 +99,25 @@ body {
 .strategy-chip { display:inline-block; margin:4px 0 8px; background:#e3f2fd; border:2px solid #64b5f6; border-radius:20px; padding:3px 12px; font-size:.78em; color:#0d47a1; }
 .mastery-stars { font-size:.72em; color:#ffb300; letter-spacing:2px; line-height:1.7; }
 .op-btn.op-off .mastery-stars { color:#cfcfcf; }
+/* ── Ten-frames (concrete stage) ── */
+.tf-guide { margin: 10px 0 6px; }
+.tf-guide-toggle { width:100%; text-align:left; background:#ede7f6; border:2px solid #9575cd; border-radius:12px; padding:8px 14px; font-family:Nunito,cursive; font-weight:900; font-size:.88em; color:#4527a0; cursor:pointer; transition:background .15s; }
+.tf-guide-toggle:hover { background:#d1c4e9; }
+.tf-guide-toggle.open { border-radius:12px 12px 0 0; }
+.tf-guide-body { background:#faf8ff; border:2px solid #9575cd; border-top:none; border-radius:0 0 12px 12px; padding:10px 14px 12px; display:none; text-align:center; }
+.tf-frames { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:6px 0; }
+.tf-frame { display:grid; grid-template-columns:repeat(5,42px); grid-auto-rows:42px; gap:6px; background:#fff; border:2px solid #b39ddb; border-radius:12px; padding:10px; }
+.tf-cell { width:42px; height:42px; border-radius:50%; border:2px dashed #b39ddb; background:#fafafa; cursor:pointer; font-size:22px; display:flex; align-items:center; justify-content:center; padding:0; transition:transform .12s; }
+.tf-cell:not(.locked):hover { transform:scale(1.1); }
+.tf-cell.locked { cursor:default; }
+.tf-cell.taken { opacity:.3; }
+.tf-readout { font-weight:900; color:#4527a0; font-size:.95em; margin:8px 0 4px; min-height:1.4em; }
+.tf-hintline { font-size:.78em; color:#666; margin-bottom:6px; }
+.tf-reset { background:#fff; border:2px solid #9575cd; border-radius:10px; padding:4px 14px; font-family:Nunito,cursive; font-weight:900; font-size:.8em; color:#4527a0; cursor:pointer; margin-top:4px; }
+.tf-reset:hover { background:#ede7f6; }
+/* ── Number bonds (part-part-whole) ── */
+.bond-wrap { text-align:center; margin:10px 0 4px; }
+.bond-cap { font-size:.8em; font-weight:900; color:#5d4037; margin-top:2px; }
 .conv-guide-body table { width:100%; border-collapse:collapse; font-size:.82em; }
 .conv-guide-body td { padding:5px 8px; border-bottom:1px solid #c5e1a5; vertical-align:top; }
 .conv-guide-body tr:last-child td { border-bottom:none; }
@@ -204,7 +223,7 @@ body {
 
 /* ── Zoo View (Animated) ── */
 .zoo-view-scroll { overflow-y: auto; max-height: calc(100dvh - 165px); border-radius: 18px; box-shadow: 0 5px 20px rgba(0,0,0,.18); }
-.zoo-view-wrap { border-radius: 0; overflow-x: hidden; }
+.zoo-view-wrap { border-radius: 0; overflow-x: hidden; position: relative; }
 /* ── Visit Zone Sections ── */
 .zv-zone { padding: 8px 10px 12px; }
 .zv-zone-label { font-size: .72em; font-weight: 900; letter-spacing: .5px; padding: 3px 12px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
@@ -218,6 +237,32 @@ body {
 .food-card .f-ds { font-size: .7em; color: #555; margin-bottom: 5px; line-height: 1.3; }
 .food-card .f-boost { font-size: .72em; font-weight: 700; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 2px 7px; margin-bottom: 6px; display: inline-block; }
 .zv-sky { background: linear-gradient(180deg,#42a5f5,#81d4fa); padding: 8px 14px; display: flex; align-items: center; gap: 10px; font-size: 1.15em; min-height: 42px; }
+/* ── Living zoo atmosphere (v6) ── */
+.zv-sky{position:relative;overflow:hidden;}
+#zvWeather{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:40;}
+.zv-orb{display:inline-block;filter:drop-shadow(0 0 7px rgba(255,243,190,.95));}
+.zv-sky.night .zv-orb{filter:drop-shadow(0 0 7px rgba(190,205,255,.95));}
+.zv-clouds{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.zv-cloud{position:absolute;top:5px;width:52px;height:15px;background:rgba(255,255,255,.92);border-radius:20px;animation:zvCloud linear infinite;}
+.zv-cloud::before,.zv-cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.zv-cloud::before{width:22px;height:22px;top:-11px;left:9px;}
+.zv-cloud::after{width:15px;height:15px;top:-7px;left:26px;}
+.zv-cloud.zc1{animation-duration:47s;transform:scale(.8);}
+.zv-cloud.zc2{animation-duration:73s;top:22px;animation-delay:-31s;transform:scale(.55);opacity:.7;}
+@keyframes zvCloud{from{left:-70px;}to{left:105%;}}
+.zv-sky.night .zv-clouds{display:none;}
+.zv-stars{position:absolute;inset:0;pointer-events:none;display:none;}
+.zv-sky.night .zv-stars{display:block;}
+.zv-stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:zvTwinkle 2.4s ease-in-out infinite;}
+@keyframes zvTwinkle{0%,100%{opacity:.2;}50%{opacity:1;}}
+.zv-scenery{line-height:0;}
+.zv-scenery svg{display:block;width:100%;height:46px;}
+.pollen-layer{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;}
+.pollen-mote{position:absolute;bottom:-4px;width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,rgba(255,241,180,.95),rgba(255,213,79,.35));animation:pollen-drift var(--pdur,4s) ease-in infinite;pointer-events:none;z-index:2;}
+@keyframes pollen-drift{0%{transform:translate(0,0);opacity:0;}25%{opacity:.95;}100%{transform:translate(26px,-70px);opacity:0;}}
+@media (prefers-reduced-motion: reduce){
+  .zv-cloud,.zv-stars i,.zv-orb,.pollen-mote{animation:none !important;}
+}
 .zv-mid { background: linear-gradient(180deg,#a5d6a7 0%,#81c784 100%); padding: 10px; }
 .enc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px,1fr)); gap: 10px; }
 .enclosure { border: 4px solid #4e342e; border-radius: 10px; height: 128px; position: relative; overflow: hidden; background: linear-gradient(180deg,#fffde7 0%,#dcedc8 58%,#c5e1a5 100%); }
@@ -749,6 +794,10 @@ body {
             <button class="bar-guide-toggle" id="barGuideToggle" onclick="toggleBarGuide()">📊 Bar Model ▸</button>
             <div class="bar-guide-body" id="barGuideBody"></div>
         </div>
+        <div class="tf-guide" id="tfGuide" style="display:none">
+            <button class="tf-guide-toggle" id="tfToggle" onclick="toggleTfGuide()">🔢 Ten-Frames ▸</button>
+            <div class="tf-guide-body" id="tfBody"></div>
+        </div>
         <div id="workPanel" style="display:none"></div>
         <div class="answers" id="answers"></div>
         <div class="misc-box" id="miscBox"></div>
@@ -1059,16 +1108,29 @@ const EVENTS = [
 // 10 levels — each requires 50 correct answers to advance
 const LEVELS = [
     { label:'Zookeeper Trainee' },       // 1  (0–49 correct)
-    { label:'Junior Zookeeper' },        // 2  (50–99)
-    { label:'Zookeeper' },               // 3  (100–149)
-    { label:'Senior Zookeeper' },        // 4  (150–199)
-    { label:'Head Zookeeper' },          // 5  (200–249)
-    { label:'Zoo Supervisor' },          // 6  (250–299)
-    { label:'Zoo Manager' },             // 7  (300–349)
-    { label:'Assistant Zoo Director' },  // 8  (350–399)
-    { label:'Zoo Director' },            // 9  (400–449)
-    { label:'Master Zoo Director ★' },   // 10 (450+)
+    { label:'Junior Zookeeper' },        // 2  (50–109)
+    { label:'Zookeeper' },               // 3  (110–179)
+    { label:'Senior Zookeeper' },        // 4  (180–259)
+    { label:'Head Zookeeper' },          // 5  (260–349)
+    { label:'Zoo Supervisor' },          // 6  (350–449)
+    { label:'Zoo Manager' },             // 7  (450–564)
+    { label:'Assistant Zoo Director' },  // 8  (565–694)
+    { label:'Zoo Director' },            // 9  (695–844)
+    { label:'Master Zoo Director ★' },   // 10 (845+)
 ];
+// Graduated level pacing: LEVEL_CUM[L] = lifetime correct answers needed to REACH level L.
+// Early levels unlock fast (quick wins); later climbs take longer, so new difficulty
+// unfolds over ~3 months while the zoo economy carries the rest of the year.
+// checkLevelUp only ever moves up — an existing player is never demoted.
+const LEVEL_CUM=[0,0,50,110,180,260,350,450,565,695,845];
+function levelToNext(){
+    return S.level<LEVELS.length ? Math.max(0, LEVEL_CUM[S.level+1]-S.correctCount) : 0;
+}
+function levelPct(){
+    if(S.level>=LEVELS.length) return 100;
+    const lo=LEVEL_CUM[S.level], hi=LEVEL_CUM[S.level+1];
+    return Math.min(Math.max(((S.correctCount-lo)/(hi-lo))*100,0),100);
+}
 
 // Earnings per correct answer, one entry per level
 const EARN   = [5, 6, 7, 8, 9, 10, 12, 14, 17, 20];
@@ -1549,6 +1611,20 @@ function loadQuestion(){
         bmg.style.display='none';
     }
 
+    // Ten-frames for early add/sub (numbers that fit in two frames) — collapsed
+    const tf=document.getElementById('tfGuide');
+    const tfBody=document.getElementById('tfBody');
+    const tfTgl=document.getElementById('tfToggle');
+    if(tfEligible(q)){
+        tf.style.display='block';
+        tfBody.style.display='none';
+        renderTenFrames(q);
+        tfTgl.textContent='🔢 Ten-Frames ▸';
+        tfTgl.classList.remove('open');
+    } else {
+        tf.style.display='none';
+    }
+
     const grid=document.getElementById('answers');
     grid.innerHTML='';
     choices.forEach(val=>{
@@ -1590,6 +1666,73 @@ function barModelSVG(q){
     }else return '';
     return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="max-width:100%;height:auto" role="img" aria-label="Bar model">${inner}</svg>`;
 }
+// ── Ten-frames: tappable concrete-stage counters for early add/sub ──
+let TF={mode:null,a:0,b:0,placed:0,taken:0};
+function tfEligible(q){
+    if(!q || q.isChallenge || q.opType==='econ') return false;
+    if(q.opType==='add') return (q.a+q.b)<=20;
+    if(q.opType==='sub') return q.a<=20;
+    return false;
+}
+function renderTenFrames(q){
+    TF={mode:q.opType, a:q.a, b:q.b||0, placed:0, taken:0};
+    const body=document.getElementById('tfBody');
+    const cells=[];
+    for(let i=0;i<20;i++){
+        const prefilled=i<TF.a;
+        let cls='tf-cell', label='', locked=false, action='';
+        if(TF.mode==='add'){
+            if(prefilled){ cls+=' locked'; label='🔵'; locked=true; }
+            else { action=`onclick="tfTap(${i})" aria-label="Add a counter"`; }
+        }else{ // sub: tap prefilled counters to take them away
+            if(prefilled){ action=`onclick="tfTap(${i})" aria-label="Take this counter away"`; label='🔵'; }
+            else { cls+=' locked'; locked=true; }
+        }
+        cells.push(`<button class="${cls}" data-i="${i}" ${action}>${label}</button>`);
+    }
+    const frame=c=>`<div class="tf-frame">${c}</div>`;
+    const hint=TF.mode==='add'
+        ? `Tap the empty circles to add <b>${q.b}</b> counters — build the second number!`
+        : `Tap the blue counters to take <b>${q.b}</b> away!`;
+    body.innerHTML=`<div class="tf-hintline">${hint}</div>`
+        + `<div class="tf-frames">${frame(cells.slice(0,10).join(''))}${frame(cells.slice(10).join(''))}</div>`
+        + `<div class="tf-readout" id="tfReadout"></div>`
+        + `<button class="tf-reset" onclick="tfReset()">↺ Reset counters</button>`;
+    tfUpdateReadout();
+}
+function tfTap(i){
+    const btn=document.querySelector(`#tfBody .tf-cell[data-i="${i}"]`);
+    if(!btn) return;
+    if(TF.mode==='add'){
+        if(btn.textContent==='🟠'){ btn.textContent=''; TF.placed--; }
+        else { btn.textContent='🟠'; TF.placed++; }
+    }else{
+        if(btn.classList.contains('taken')){ btn.classList.remove('taken'); btn.textContent='🔵'; TF.taken--; }
+        else { btn.classList.add('taken'); btn.textContent='⚪'; TF.taken++; }
+    }
+    tfUpdateReadout();
+}
+function tfReset(){
+    renderTenFrames({opType:TF.mode, a:TF.a, b:TF.b});
+    // keep the guide open state as-is; body was rebuilt visible
+    document.getElementById('tfBody').style.display='block';
+}
+function tfUpdateReadout(){
+    const el=document.getElementById('tfReadout');
+    if(!el) return;
+    el.textContent = TF.mode==='add'
+        ? `You built: ${TF.a} + ${TF.placed} = ${TF.a+TF.placed}`
+        : `${TF.taken} taken away → ${TF.a-TF.taken} left`;
+}
+function toggleTfGuide(){
+    const body=document.getElementById('tfBody');
+    const toggle=document.getElementById('tfToggle');
+    const open=body.style.display!=='none';
+    body.style.display=open?'none':'block';
+    toggle.textContent=open?'🔢 Ten-Frames ▸':'🔢 Ten-Frames ▾';
+    toggle.classList.toggle('open',!open);
+}
+
 function toggleBarGuide(){
     const body=document.getElementById('barGuideBody');
     const toggle=document.getElementById('barGuideToggle');
@@ -1723,6 +1866,8 @@ function showHint(q, hb, isCorrect=false){
     let html=`<div class="hint-label">${label}</div>`;
     if(h.strategy) html+=`<div class="strategy-chip">🌟 Strategy: <b>${h.strategy}</b></div>`;
     html+=h.text;
+    const bond=(typeof numberBondSVG==='function')?numberBondSVG(q):'';
+    if(bond) html+=bond;
     if(h.work) html+=`<div style="text-align:center;margin-top:8px"><div class="workthrough">${h.work}</div></div>`;
     if(h.extra) html+=h.extra;
     hb.innerHTML=html;
@@ -1830,7 +1975,7 @@ function showBadgeToast(a){
 
 function checkLevelUp(){
     const maxLv=LEVELS.length;
-    while(S.level<maxLv && S.correctCount>=S.level*50){
+    while(S.level<maxLv && S.correctCount>=LEVEL_CUM[S.level+1]){
         S.level++;
         beep('lvl');
         const b=document.getElementById('lvlup');
@@ -1902,9 +2047,8 @@ function updateUI(){
     _sb.classList.toggle('hot2',S.streak>=5&&S.streak<10);
     _sb.classList.toggle('hot3',S.streak>=10);
     document.getElementById('levelBadge').textContent  =LEVELS[S.level-1].label;
-    // Progress = how far through the 50-answer band for this level
-    const pct=S.level>=LEVELS.length ? 100
-             : Math.min(((S.correctCount-(S.level-1)*50)/50)*100, 100);
+    // Progress = how far through this level's graduated band
+    const pct=levelPct();
     document.getElementById('progressFill').style.width=pct+'%';
     const tab=document.querySelector('.tab.active')?.dataset.tab;
     if(tab==='zoo')      renderZoo();
@@ -1937,6 +2081,7 @@ function renderZoo(){
         }
         return `<div class="zv-zone" style="background:${z.bg}">
             <div class="zv-zone-label" style="color:${z.color};background:${z.bg};border:2px solid ${z.border}">${z.label}</div>
+            <div class="zv-scenery">${zoneScenery(zid)}</div>
             <div class="enc-grid">${ownedInZone.map(buildEnc).join('')}</div>
         </div>`;
     }).join('');
@@ -1970,7 +2115,7 @@ function renderZoo(){
     wrap.innerHTML=`
         ${statsBar}
         <div class="zoo-view-scroll" style="margin-top:8px"><div class="zoo-view-wrap">
-            <div class="zv-sky" style="background:${ph.sky}">${ph.icon} ${ph.extras}
+            <div class="zv-sky${S.dayPhase===3?' night':''}" style="background:${ph.sky}">${zvSkyInner(ph)}
                 <span style="margin-left:auto;font-size:.62em;font-weight:700;color:${ph.tc}">🕐 ${['Morning','Afternoon','Evening','Night'][S.dayPhase]}</span>
             </div>
             <div class="zv-mid">${zonesHtml}</div>
@@ -2163,8 +2308,8 @@ function switchTab(btn){
 
 function renderProgress(){
     const wrap=document.getElementById('tab-progress');
-    const toNext=S.level<LEVELS.length?(S.level*50)-S.correctCount:0;
-    const pct=S.level>=LEVELS.length?100:Math.min(((S.correctCount-(S.level-1)*50)/50)*100,100);
+    const toNext=levelToNext();
+    const pct=levelPct();
     const totalAnimals=Object.values(S.animals).reduce((s,c)=>s+c,0);
     const earned=ACHIEVEMENTS.filter(a=>S.badges.includes(a.id));
     const unearned=ACHIEVEMENTS.filter(a=>!S.badges.includes(a.id));
@@ -2595,6 +2740,17 @@ function _encHtml(id){
         extraClass=' enc-arctic';
     }
 
+    if(zone==='oceania'){
+        // Drifting golden pollen motes
+        const motes=Array.from({length:7},(_,i)=>{
+            const lp=(8+i*12+Math.round(Math.random()*6)).toFixed(0);
+            const delay=(i*0.53).toFixed(2);
+            const dur=(3.2+i*0.31).toFixed(2);
+            return `<div class="pollen-mote" style="left:${lp}%;--pdur:${dur}s;animation-delay:${delay}s"></div>`;
+        }).join('');
+        ambient=`<div class="pollen-layer">${motes}</div>`;
+    }
+
     return `<div class="enclosure${extraClass}" id="enc-${id}" onclick="tapEnclosure('${id}',event)">
         <div class="enc-label">${a.emoji} ${a.name}${cnt>1?` ×${cnt}`:''}</div>
         <em class="enc-decor" style="left:3px;bottom:22px;font-size:.95em">${d1}</em>
@@ -2629,6 +2785,7 @@ function renderZooView(){
         const z=ZONES[zid];
         return `<div class="zv-zone" style="background:${z.bg}">
             <div class="zv-zone-label" style="color:${z.color};background:${z.bg};border:2px solid ${z.border}">${z.label}</div>
+            <div class="zv-scenery">${zoneScenery(zid)}</div>
             <div class="enc-grid">${byZone[zid].map(makeEnclosure).join('')}</div>
         </div>`;
     }).join('');
@@ -2642,7 +2799,7 @@ function renderZooView(){
     ];
     const ph=phases[S.dayPhase]||phases[0];
     wrap.innerHTML=`<div class="zoo-view-scroll"><div class="zoo-view-wrap">
-        <div class="zv-sky" style="background:${ph.sky}">${ph.icon} ${ph.extras}
+        <div class="zv-sky${S.dayPhase===3?' night':''}" style="background:${ph.sky}">${zvSkyInner(ph)}
             <span style="margin-left:auto;font-size:.62em;font-weight:700;color:${ph.tc}">🐾 ${total} animal${total!==1?'s':''}</span>
         </div>
         <div class="zv-mid">${zonesHtml}</div>
@@ -2700,8 +2857,173 @@ function _setupGuestWalkers(){
     });
 }
 
+// ── Living zoo atmosphere: canvas weather, tap bursts, seeded scenery ──
+const ATM_REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const ATM = { cv:null, ctx:null, W:0, H:0, parts:[], mode:'clear', evtLeft:0, nextEvt:20 };
+function _sHash(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function _sRnd(seed){ let h=_sHash(seed); return ()=>{ h=Math.imul(h^h>>>15,2246822507); h=Math.imul(h^h>>>13,3266489909); h^=h>>>16; return (h>>>0)/4294967296; }; }
+function _aRnd(a,b){ return a+Math.random()*(b-a); }
+
+function zvStars(){
+    const r=_sRnd('zvstars'); let s='';
+    for(let i=0;i<14;i++) s+=`<i style="left:${(r()*96).toFixed(1)}%;top:${(r()*75).toFixed(1)}%;animation-delay:${(r()*2.4).toFixed(2)}s"></i>`;
+    return s;
+}
+function zvSkyInner(ph){
+    return `<span class="zv-orb">${ph.icon}</span> ${ph.extras}`
+        + `<div class="zv-clouds" aria-hidden="true"><div class="zv-cloud zc1"></div><div class="zv-cloud zc2"></div></div>`
+        + `<div class="zv-stars" aria-hidden="true">${zvStars()}</div>`;
+}
+
+// ── Seeded SVG scenery silhouettes per zone ──
+const SCN_SHAPES={
+    palm:(x,y,s,c)=>{ let f=''; for(const a of [-75,-38,0,38,75]){ const rad=a*Math.PI/180, ex=x+Math.cos(rad)*15*s, ey=y-36*s+Math.sin(rad)*8*s;
+        f+=`<ellipse cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" rx="${(14*s).toFixed(1)}" ry="${(4.8*s).toFixed(1)}" fill="${c}" transform="rotate(${a} ${ex.toFixed(1)} ${ey.toFixed(1)})"/>`; }
+        return `<path d="M${x} ${y} Q${x+3*s} ${y-20*s} ${x-3*s} ${y-36*s}" stroke="${c}" stroke-width="${(3.6*s).toFixed(1)}" fill="none" stroke-linecap="round"/>`+f; },
+    acacia:(x,y,s,c)=>`<path d="M${x} ${y} Q${x+2*s} ${y-16*s} ${x-2*s} ${y-26*s}" stroke="${c}" stroke-width="${(3.4*s).toFixed(1)}" fill="none" stroke-linecap="round"/><ellipse cx="${(x-2*s).toFixed(1)}" cy="${(y-30*s).toFixed(1)}" rx="${(26*s).toFixed(1)}" ry="${(8*s).toFixed(1)}" fill="${c}"/>`,
+    roundTree:(x,y,s,c)=>`<path d="M${x} ${y} L${x} ${y-22*s}" stroke="${c}" stroke-width="${(3.4*s).toFixed(1)}" stroke-linecap="round"/><circle cx="${x}" cy="${(y-30*s).toFixed(1)}" r="${(13*s).toFixed(1)}" fill="${c}"/>`,
+    pine:(x,y,s,c)=>{ let t=''; for(let i=0;i<3;i++){ const w=(16-i*4)*s, ty=y-i*11*s; t+=`<polygon points="${x-w},${ty} ${x+w},${ty} ${x},${ty-14*s}" fill="${c}"/>`; } return t+`<rect x="${x-2*s}" y="${y-4*s}" width="${4*s}" height="${6*s}" fill="${c}"/>`; },
+    mountain:(x,y,s,c)=>`<polygon points="${x-42*s},${y} ${x+42*s},${y} ${x},${y-54*s}" fill="${c}"/><polygon points="${x-11*s},${y-40.5*s} ${x+11*s},${y-40.5*s} ${x},${y-54*s}" fill="#ffffff" opacity=".85"/>`,
+    reed:(x,y,s,c)=>{ let r=''; for(let i=-1;i<=1;i++){ r+=`<path d="M${x+i*7*s} ${y} Q${x+i*9*s} ${y-18*s} ${x+i*6*s} ${y-30*s}" stroke="${c}" stroke-width="${(2*s).toFixed(1)}" fill="none" stroke-linecap="round"/>`; } return r+`<ellipse cx="${x-6*s}" cy="${y-31*s}" rx="${2.6*s}" ry="${5*s}" fill="#8d6e63"/>`; },
+    coral:(x,y,s,c)=>{ let b=''; for(const [dx,dy,w] of [[-14,-20,4],[-5,-30,4],[6,-26,4],[14,-18,4]]){ b+=`<path d="M${x} ${y} Q${x+dx*.5*s} ${y+dy*.6*s} ${x+dx*s} ${y+dy*s}" stroke="${c}" stroke-width="${(w*s).toFixed(1)}" fill="none" stroke-linecap="round"/>`; } return b; },
+    kelp:(x,y,s,c)=>`<path d="M${x-6*s} ${y} Q${x+4*s} ${y-16*s} ${x-6*s} ${y-34*s}" stroke="${c}" stroke-width="${(3*s).toFixed(1)}" fill="none" stroke-linecap="round"/><path d="M${x+8*s} ${y} Q${x-2*s} ${y-14*s} ${x+8*s} ${y-28*s}" stroke="${c}" stroke-width="${(2.4*s).toFixed(1)}" fill="none" stroke-linecap="round"/>`,
+    fern:(x,y,s,c)=>{ let f=''; for(let i=-2;i<=2;i++){ f+=`<path d="M${x} ${y} Q${x+i*10*s} ${y-12*s} ${x+i*14*s} ${y-22*s}" stroke="${c}" stroke-width="${(2.6*s).toFixed(1)}" fill="none" stroke-linecap="round"/>`; } return f; },
+    rock:(x,y,s,c)=>`<ellipse cx="${x}" cy="${(y+2*s).toFixed(1)}" rx="${(12*s).toFixed(1)}" ry="${(7*s).toFixed(1)}" fill="${c}"/>`,
+    grassTuft:(x,y,s,c)=>{ let g=''; for(let i=-2;i<=2;i++){ g+=`<polygon points="${x+i*4*s-1.6*s},${y} ${x+i*4*s+1.6*s},${y} ${x+i*6*s},${y-13*s}" fill="${c}"/>`; } return g; },
+    cactus:(x,y,s,c)=>`<rect x="${x-3.4*s}" y="${y-26*s}" width="${6.8*s}" height="${26*s}" rx="${3.4*s}" fill="${c}"/><rect x="${x-11*s}" y="${y-20*s}" width="${5.4*s}" height="${12*s}" rx="${2.7*s}" fill="${c}"/><rect x="${x+5.6*s}" y="${y-24*s}" width="${5.4*s}" height="${14*s}" rx="${2.7*s}" fill="${c}"/>`,
+};
+const ZONE_SCN={
+    tropical:  {shapes:['palm','fern'], back:'#b9dfba', front:'#6faf71'},
+    savanna:   {shapes:['acacia','grassTuft','cactus','rock'], back:'#ead9a0', front:'#c8a24a'},
+    arctic:    {shapes:['mountain','pine'], back:'#c3d9f5', front:'#7ba7dd'},
+    rainforest:{shapes:['palm','fern'], back:'#b3d3b3', front:'#5f915f'},
+    river:     {shapes:['reed','rock'], back:'#b5dfe4', front:'#55a3ad'},
+    mountain:  {shapes:['mountain','pine','rock'], back:'#c3ced4', front:'#7e97a3'},
+    aquarium:  {shapes:['kelp','coral','rock'], back:'#a5dbe0', front:'#4a9aa4'},
+    oceania:   {shapes:['roundTree','grassTuft','rock'], back:'#eec49b', front:'#c08348'},
+};
+function zoneScenery(zid){
+    const cfg=ZONE_SCN[zid]; if(!cfg) return '';
+    const rnd=_sRnd('scn'+zid), W=600, H=64;
+    let back='', front='', bx=20+rnd()*40;
+    const bn=3+Math.floor(rnd()*2);
+    for(let i=0;i<bn;i++){ const sh=cfg.shapes[Math.floor(rnd()*cfg.shapes.length)];
+        back+=SCN_SHAPES[sh](bx,H,1.15+rnd()*.5,cfg.back); bx+=W/bn; }
+    let fx=10+rnd()*30;
+    const fn=5+Math.floor(rnd()*3);
+    for(let i=0;i<fn;i++){ const sh=cfg.shapes[Math.floor(rnd()*cfg.shapes.length)];
+        front+=SCN_SHAPES[sh](fx,H,.7+rnd()*.4,cfg.front); fx+=W/fn; }
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" role="img" aria-label="${zid} scenery">${back}${front}</svg>`;
+}
+
+// ── Canvas weather engine ──
+function atmSetup(){
+    if(ATM_REDUCED) return;
+    document.querySelectorAll('#zvWeather').forEach(c=>c.remove()); // exactly one canvas
+    const wrap=document.querySelector('.tab-content.active .zoo-view-wrap');
+    if(!wrap) return;
+    const cv=document.createElement('canvas');
+    cv.id='zvWeather'; cv.setAttribute('aria-hidden','true');
+    wrap.appendChild(cv);
+    ATM.cv=cv; ATM.ctx=cv.getContext('2d');
+    ATM.parts.length=0; ATM.mode='clear'; ATM.nextEvt=18+Math.random()*20;
+    atmResize();
+}
+function atmResize(){
+    if(!ATM.cv) return;
+    const r=ATM.cv.parentElement.getBoundingClientRect();
+    ATM.W=ATM.cv.width=Math.max(60,Math.round(r.width));
+    ATM.H=ATM.cv.height=Math.max(60,Math.round(r.height));
+}
+if(!window._atmResizeBound){ window._atmResizeBound=true; window.addEventListener('resize',()=>{ if(ATM.cv) atmResize(); }); }
+
+function _mkAtm(mode){
+    const W=ATM.W,H=ATM.H,night=S.dayPhase===3;
+    const p={ph:Math.random()*6.28,rot:Math.random()*6.28,vr:_aRnd(-.15,.15),life:1};
+    if(mode==='rain')   return Object.assign(p,{k:'rain',x:_aRnd(0,W),y:_aRnd(-40,-5),vx:_aRnd(-3,-1.5),vy:_aRnd(11,16),len:_aRnd(10,17)});
+    if(mode==='snow')   return Object.assign(p,{k:'snow',x:_aRnd(0,W),y:_aRnd(-20,-2),vx:_aRnd(-.4,.4),vy:_aRnd(1,2.3),r:_aRnd(1.8,3.6)});
+    if(mode==='leaves') return Object.assign(p,{k:'leaf',x:_aRnd(0,W),y:_aRnd(-30,-5),vx:_aRnd(-.6,.6),vy:_aRnd(1.2,2.6),r:_aRnd(3.5,6),c:['#81c784','#aed581','#ffcc80','#a5d6a7'][Math.floor(Math.random()*4)]});
+    if(night)           return Object.assign(p,{k:'firefly',x:_aRnd(0,W),y:_aRnd(0,H),vx:_aRnd(-.5,.5),vy:_aRnd(-.4,.4),r:_aRnd(2.4,4)});
+    return Object.assign(p,{k:'pollen',x:_aRnd(0,W),y:_aRnd(0,H),vx:_aRnd(-.35,.35),vy:_aRnd(-.25,.15),r:_aRnd(1.2,2.6)});
+}
+function _atmModeNow(){ return ATM.mode==='clear'?'clear':ATM.mode; }
+function _atmUpdate(dt){
+    if(ATM_REDUCED||!ATM.cv||!ATM.ctx) return;
+    if(!ATM.cv.isConnected||!ATM.cv.offsetParent) return; // zoo tab not visible: rest
+    const sc=Math.min(dt,80)/16, ctx=ATM.ctx, W=ATM.W, H=ATM.H;
+    if(ATM.mode==='clear'){
+        ATM.nextEvt-=dt/1000;
+        if(ATM.nextEvt<=0){ ATM.mode=['rain','rain','leaves','snow'][Math.floor(Math.random()*4)]; ATM.evtLeft=13+Math.random()*10; }
+    } else {
+        ATM.evtLeft-=dt/1000;
+        if(ATM.evtLeft<=0){ ATM.mode='clear'; ATM.nextEvt=35+Math.random()*45; }
+    }
+    const night=S.dayPhase===3;
+    const target=ATM.mode==='clear'?(night?16:12):ATM.mode==='rain'?110:ATM.mode==='snow'?85:65;
+    if(ATM.parts.length<target && Math.random()<.6) ATM.parts.push(_mkAtm(_atmModeNow()));
+    const P=ATM.parts;
+    for(let i=P.length-1;i>=0;i--){
+        const p=P[i];
+        if(p.bx){
+            p.vy+=p.g; p.x+=p.vx*sc; p.y+=p.vy*sc; p.rot+=p.vr*sc; p.life-=p.decay*sc;
+            if(p.life<=0||p.y>H+20){ P.splice(i,1); continue; }
+        } else if(p.k==='rain'){
+            p.x+=p.vx*sc; p.y+=p.vy*sc;
+            if(p.y>H+20||p.x<-30){ P[i]=_mkAtm(_atmModeNow()); P[i].y=-20; }
+        } else if(p.k==='snow'||p.k==='leaf'){
+            p.ph+=.03*sc; p.x+=(p.vx+Math.sin(p.ph)*.7)*sc; p.y+=p.vy*sc; p.rot+=p.vr*sc;
+            if(p.y>H+20){ P[i]=_mkAtm(_atmModeNow()); P[i].y=-20; }
+        } else {
+            p.ph+=.02*sc;
+            p.x+=(p.vx+Math.sin(p.ph)*.4)*sc; p.y+=(p.vy+Math.cos(p.ph*.7)*.3)*sc;
+            if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+        }
+    }
+    if(P.length>170) P.splice(0,P.length-170);
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){
+        if(p.bx){
+            ctx.globalAlpha=Math.max(p.life,0);
+            ctx.fillStyle=p.c||'#ffffff';
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life+0.5,0,6.29); ctx.fill();
+            ctx.globalAlpha=1; continue;
+        }
+        if(p.k==='rain'){ ctx.strokeStyle='rgba(174,194,224,.55)'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x-p.vx*.9,p.y-p.len); ctx.stroke(); }
+        else if(p.k==='snow'){ ctx.fillStyle='rgba(255,255,255,.85)';
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.29); ctx.fill(); }
+        else if(p.k==='leaf'){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+            ctx.fillStyle=p.c; ctx.globalAlpha=.9;
+            ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.55,0,0,6.29); ctx.fill(); ctx.restore(); }
+        else if(p.k==='firefly'){ const tw=.35+.65*Math.abs(Math.sin(p.ph*2));
+            ctx.fillStyle=`rgba(220,255,150,${(.28*tw).toFixed(3)})`;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r*2.2,0,6.29); ctx.fill();
+            ctx.fillStyle=`rgba(240,255,170,${(.9*tw+.1).toFixed(3)})`;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.29); ctx.fill(); }
+        else { const tw=.3+.7*Math.abs(Math.sin(p.ph*1.5));
+            ctx.fillStyle=`rgba(255,246,200,${(.5*tw).toFixed(3)})`;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.29); ctx.fill(); }
+    }
+}
+// Tap bursts (viewport coords — converted to canvas space inside)
+function atmBurst(vx,vy,kind){
+    if(ATM_REDUCED||!ATM.cv||!ATM.ctx) return;
+    const r=ATM.cv.getBoundingClientRect();
+    const x=vx-r.left, y=vy-r.top;
+    const cfg={splash:{n:14,c:'#4fc3f7',g:.14},snowpoof:{n:12,c:'#ffffff',g:.06},
+               dust:{n:10,c:'#d7b98a',g:-.02},leafburst:{n:12,c:null,g:.05}}[kind]||{n:10,c:'#ffffff',g:.08};
+    for(let i=0;i<cfg.n;i++){
+        const a=Math.random()*6.283, sp=_aRnd(1,3.6);
+        ATM.parts.push({bx:1,kind,x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.6,g:cfg.g,
+            life:1,decay:_aRnd(.02,.045),size:_aRnd(2,4.6),rot:0,vr:0,
+            c:kind==='leafburst'?['#9ccc65','#aed581','#ffcc80'][i%3]:cfg.c});
+    }
+    if(ATM.parts.length>170) ATM.parts.splice(0,ATM.parts.length-170);
+}
+
 function _startZvAnim(){
     _zvActive=true;
+    _setupAtmosphere();
     if(!_zvRunning){ _zvRunning=true; requestAnimationFrame(_zvLoop); }
 }
 
@@ -2724,6 +3046,7 @@ function tapEnclosure(id, e){
     if(['savanna','tropical','mountain','rainforest'].includes(a.zone)){
         if(enc.dataset.running==='1') return;   // already running, debounce
         enc.dataset.running='1';
+        { const r=enc.getBoundingClientRect(); atmBurst(r.left+r.width/2, r.top+r.height/2, 'dust'); }
 
         // Speed up all walkers belonging to this enclosure 4×
         const myWalkers=_animalWalkers.filter(w=>w.el.dataset.zid===id);
@@ -2765,6 +3088,7 @@ function tapEnclosure(id, e){
         ripple.style.top=y+'px';
         enc.appendChild(ripple);
         setTimeout(()=>ripple.remove(), 750);
+        atmBurst(cx, cy, 'splash');
 
         // Also burst a bubble emoji
         const burst=document.createElement('div');
@@ -2797,6 +3121,18 @@ function tapEnclosure(id, e){
         const burst=document.createElement('div');
         burst.className='tap-burst';
         burst.textContent='🌨️';
+        enc.appendChild(burst);
+        setTimeout(()=>burst.remove(), 800);
+        { const r=enc.getBoundingClientRect(); atmBurst(r.left+r.width/2, r.top+40, 'snowpoof'); }
+    }
+
+    // ── OCEANIA → Gum-leaf burst ──
+    else if(a.zone==='oceania'){
+        const r=enc.getBoundingClientRect();
+        atmBurst(r.left+r.width/2, r.top+r.height/2, 'leafburst');
+        const burst=document.createElement('div');
+        burst.className='tap-burst';
+        burst.textContent='🍃';
         enc.appendChild(burst);
         setTimeout(()=>burst.remove(), 800);
     }
@@ -2841,6 +3177,7 @@ function _zvLoop(ts){
         w.el.style.transform=`scaleX(${w.spd>=0?1:-1})`;
     });
 
+    _atmUpdate(dt);
     requestAnimationFrame(_zvLoop);
 }
 
